@@ -31,7 +31,7 @@ const TurfList = () => {
   return (
     <div className="w-full max-w-7xl mx-auto mt-7 px-4">
       {/* Title */}
-      <h2 className="text-4xl md:text-6xl font-bold text-center mb-5 text-green-700">
+      <h2 className="text-4xl md:text-6xl font-bold text-center mb-4 text-green-700">
         Turf <span className="italic text-yellow-500">List</span>
       </h2>
       <p className="text-lg leading-7  text-gray-500 italic text-center px-3 md:w-2/3 mx-auto  w-full mb-10">Lorem ipsum dolor sit amet consectetur adipisicing elit. Et dolor dignissimos odio exercitationem eveniet autem perferendis ea cum quidem explicabo!</p>

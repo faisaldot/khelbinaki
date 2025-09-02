@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import Logo from "../../public/KhelbaNakiLogo.png";
 import Container from "./Container";
+import { NavLink } from "react-router";
 
 const Navbar = () => {
   return (
@@ -12,9 +13,11 @@ const Navbar = () => {
            <Link to={"/"}>
             <img src={Logo} className="w-20 h-20 object-contain" alt="Logo" /></Link>
             <div className="flex gap-7  text-gray-500 font-normal">
-              <Link to="/">Bookings</Link>
-              <Link to="/my-booking">My Booking</Link>
-              <Link to="/about">About Us</Link>
+              <NavLink to="/turfs">Turfs</NavLink>
+              <NavLink to="/my-booking">My Booking</NavLink>
+              <NavLink to="/gallery">Gallery</NavLink>
+              <NavLink to="/about">About Us</NavLink>
+              <NavLink to="/dashboard">Dashboard</NavLink>
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import Logo from "../../public/KhelbaNakiLogo.png";
+// import { useNavigation } from "react-router";
 
 type RegisterFormInputs = {
   name: string;
@@ -10,6 +11,7 @@ type RegisterFormInputs = {
 };
 
 const Register: React.FC = () => {
+  // const nav= useNavigation();
   const {
     register,
     handleSubmit,
@@ -20,9 +22,9 @@ const Register: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const onSubmit = async (data: object) => {
+   window.open("/register/verify-email")
     setIsSubmitting(true);
     console.log("Register Data:", data);
-
     setTimeout(() => {
       setIsSubmitting(false);
     }, 2000);
