@@ -11,6 +11,8 @@ import NotFound from "../Pages/ErrorPage";
 import Gallery from "../Pages/Gallery";
 import Turfs from "../Pages/Turfs";
 import UserDashboard from "../Dasboard/UserDashboard";
+import Profile from "../Dasboard/UserPage/Profile";
+import MyBookings from "../Dasboard/UserPage/MyBookings";
 
 
  const router = createBrowserRouter([
@@ -56,7 +58,17 @@ import UserDashboard from "../Dasboard/UserDashboard";
 
   {
     path:"/dashboard",
-    element:<UserDashboard/>
+    element:<UserDashboard/>,
+    children:[
+      {
+        path:"/dashboard/profile",
+        element:<Profile/>
+      },
+      {
+        path:"/dashboard/my-bookings",
+        element:<MyBookings/>
+      }
+    ]
   },
 
 

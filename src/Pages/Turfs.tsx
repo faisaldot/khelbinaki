@@ -1,5 +1,5 @@
 import { useState } from "react";
-import TurfList from "../Components/TurfList.";
+import TurfList from "../Components/TurfList";
 import Container from "../Components/Container";
 
 const Turfs: React.FC = () => {
