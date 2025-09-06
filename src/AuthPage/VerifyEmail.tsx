@@ -1,18 +1,14 @@
-// @ts-nocheck
-
-
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { verifyOtp } from "../api/auth"; 
-import { useAuth } from "../context/AuthContext";
 
 type VerifyFormInputs = {
   code: string;
 };
 
 const VerifyEmail: React.FC = () => {
-  const {email}=useAuth();
+  const {email}= useParams();
   console.log("Email is this",email);
   const { register, handleSubmit, formState: { errors } } = useForm<VerifyFormInputs>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,8 +21,9 @@ const VerifyEmail: React.FC = () => {
 
     try {
       console.log(email,data?.code);
-      const result = await verifyOtp(email, data?.code);
-      if (result.success) {
+      const otp= data?.code;
+      const result = await verifyOtp({email, otp});
+      if (result?.message?.includes("Email verified successfully")) {
         navigate("/");
       } else {
         setErrorMsg(result.message || "Invalid or expired code.");

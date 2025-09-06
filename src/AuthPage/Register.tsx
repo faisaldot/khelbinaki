@@ -41,6 +41,8 @@ const onSubmit = async (data: RegisterFormInputs) => {
       navigate(`/verify-otp/${data.email}`);
     } else {
       errorToast(res?.data?.message ||" Something Error" );
+      navigate(`/verify-otp/${data.email}`);
+
     }
   } catch (err) {
     errorToast("Registration failed. Try again.");
