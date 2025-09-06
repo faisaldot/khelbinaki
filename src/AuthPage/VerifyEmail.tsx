@@ -1,12 +1,19 @@
+// @ts-nocheck
+
+
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { verifyOtp } from "../api/auth"; 
+import { useAuth } from "../context/AuthContext";
 
 type VerifyFormInputs = {
   code: string;
 };
 
-const VerifyEmail: React.FC<{ userEmail: string }> = ({ userEmail }) => {
+const VerifyEmail: React.FC = () => {
+  const {email}=useAuth();
+  console.log("Email is this",email);
   const { register, handleSubmit, formState: { errors } } = useForm<VerifyFormInputs>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -17,25 +24,19 @@ const VerifyEmail: React.FC<{ userEmail: string }> = ({ userEmail }) => {
     setErrorMsg("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail, code: data.code }),
-      });
-
-      const result = await res.json();
-
+      console.log(email,data?.code);
+      const result = await verifyOtp(email, data?.code);
       if (result.success) {
-        navigate("/"); // Redirect to Home page
+        navigate("/");
       } else {
-        setErrorMsg("Invalid or expired code.");
+        setErrorMsg(result.message || "Invalid or expired code.");
       }
     } catch (error) {
       console.error(error);
       setErrorMsg("Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   return (
@@ -45,7 +46,7 @@ const VerifyEmail: React.FC<{ userEmail: string }> = ({ userEmail }) => {
           Verify Your Email
         </h2>
         <p className="text-gray-600 text-center mb-6">
-          Enter the 6-digit code we sent to <span className="font-medium">{userEmail}</span>
+          Enter the 6-digit code we sent to <span className="font-medium">{email}</span>
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

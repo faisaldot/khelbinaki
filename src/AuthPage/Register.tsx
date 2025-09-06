@@ -1,7 +1,11 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import Logo from "../../public/KhelbaNakiLogo.png";
-// import { useNavigation } from "react-router";
+import { useNavigate } from "react-router";
+import { userCreate } from "../api/auth";
+import { successToast, errorToast } from "../utils/toast";
+import { useAuth } from "../context/AuthContext";
+
 
 type RegisterFormInputs = {
   name: string;
@@ -11,7 +15,9 @@ type RegisterFormInputs = {
 };
 
 const Register: React.FC = () => {
-  // const nav= useNavigation();
+  const navigate= useNavigate();
+  const {setEmail}=useAuth();
+
   const {
     register,
     handleSubmit,
@@ -21,14 +27,35 @@ const Register: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const onSubmit = async (data: object) => {
-   window.open("/register/verify-email")
+
+
+// submit data and create user and opt send there ------->
+const onSubmit = async (data: RegisterFormInputs) => {
+  try {
     setIsSubmitting(true);
-    console.log("Register Data:", data);
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 2000);
-  };
+    const res = await userCreate(data);
+      setEmail(data?.email)
+
+    if (res?.data?.message?.includes("Registration successful")) {
+      successToast("Registration successful! Please check your email.");
+      navigate(`/verify-otp/${data.email}`);
+    } else {
+      errorToast(res?.data?.message ||" Something Error" );
+    }
+  } catch (err) {
+    errorToast("Registration failed. Try again.");
+    console.error(err);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+
+
+
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">

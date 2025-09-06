@@ -81,7 +81,7 @@ import MyBookings from "../Dasboard/UserPage/MyBookings";
     element:<Register/>
   },
   {
-    path:"/register/verify-email",
+    path:"/verify-otp/:email",
     element:<VerifyEmail/>
   },
   {
