@@ -4,6 +4,8 @@ import Container from "./Container";
 import { NavLink } from "react-router";
 
 const Navbar = () => {
+
+  const user:string = "user";
   return (
     <nav className="shadow-md py-3 bg-white">
       <Container>
@@ -17,7 +19,14 @@ const Navbar = () => {
               <NavLink to="/my-booking">My Booking</NavLink>
               <NavLink to="/gallery">Gallery</NavLink>
               <NavLink to="/about">About Us</NavLink>
-              <NavLink to="/dashboard">Dashboard</NavLink>
+              {
+                user === "admin" ? 
+             <NavLink to="/dashboard">Admin Dashboard</NavLink>
+                :
+             <NavLink to="/dashboard">Dashboard</NavLink>
+
+              }
+             
             </div>
           </div>
 

@@ -45,11 +45,11 @@ const BookingShort = () => {
   const turfs = ["Turf 1", "Turf 2", "Turf 3"];
 
   return (
-    <div className="flex justify-center mt-20 relative">
-      <div className="h-auto py-6 bg-white border border-green-200 shadow-2xl rounded-[100px] flex flex-col md:flex-row items-center justify-center gap-8 absolute -top-40 z-10 px-7 ps-10">
+    <div className="flex justify-center mt-20 relative sm:w-auto w-full">
+      <div className="h-auto p-6 bg-white border sm:w-auto w-full border-green-200 shadow-2xl sm:rounded-[100px] rounded-xl flex flex-col md:flex-row items-center justify-center gap-2 sm:gap-8 sm:absolute -top-40 z-10  ps-10">
         
         {/* Turf Select */}
-        <div className="relative w-52 border-r-2" ref={dropdownRef}>
+        <div className="relative w-full sm:w-52  sm:border-r-2" ref={dropdownRef}>
           <h2 className="text-gray-700 font-semibold">Turf Location?</h2>
           <div>
             <button
@@ -80,7 +80,7 @@ const BookingShort = () => {
         </div>
 
         {/* Date Picker */}
-        <div className="relative w-56">
+        <div className="relative sm:w-56 w-full">
           <h2 className="text-gray-700 font-semibold">Which Date You Play ?</h2>
           <DatePicker
             selected={date}
@@ -96,7 +96,7 @@ const BookingShort = () => {
         {/* Booking Button */}
         <button
           onClick={handleBooking}
-          className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-4xl hover:from-green-700 hover:to-green-800 transition flex justify-center items-center gap-x-2 shadow-lg font-semibold text-lg"
+          className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 sm:w-auto w-full sm:py-4 py-2 rounded sm:rounded-4xl hover:from-green-700 hover:to-green-800 transition flex justify-center items-center gap-x-2 shadow-lg font-semibold text-lg"
         >
           Booking <IoMdArrowForward size={22} />
         </button>

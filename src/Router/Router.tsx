@@ -10,9 +10,14 @@ import VerifyEmail from "../AuthPage/VerifyEmail";
 import NotFound from "../Pages/ErrorPage";
 import Gallery from "../Pages/Gallery";
 import Turfs from "../Pages/Turfs";
-import UserDashboard from "../Dasboard/UserDashboard";
 import Profile from "../Dasboard/UserPage/Profile";
 import MyBookings from "../Dasboard/UserPage/MyBookings";
+import DashboardLayout from "../Dasboard/Dashboard";
+import AdminStatistic from "../Dasboard/AdminDashboard/AdminStatistic";
+import AdminBookingManagement from "../Dasboard/AdminDashboard/AdminBookingManagement";
+import AdminTurfManagement from "../Dasboard/AdminDashboard/AdminTurfManagement";
+import PaymentSuccess from "../Pages/PaymentSuccess";
+import PaymentFaild from "../Pages/PaymentFaild";
 
 
  const router = createBrowserRouter([
@@ -54,11 +59,10 @@ import MyBookings from "../Dasboard/UserPage/MyBookings";
   
   
 
-  // user Privet Route --------->
-
+ // user Privet Route --------->
   {
     path:"/dashboard",
-    element:<UserDashboard/>,
+    element:<DashboardLayout/>,
     children:[
       {
         path:"/dashboard/profile",
@@ -67,6 +71,20 @@ import MyBookings from "../Dasboard/UserPage/MyBookings";
       {
         path:"/dashboard/my-bookings",
         element:<MyBookings/>
+      },
+
+      // admin route 
+      {
+        path:"/dashboard/admin/statistic",
+        element:<AdminStatistic/>
+      },
+      {
+        path:"/dashboard/admin/turfs",
+        element:<AdminTurfManagement/>
+      },
+      {
+        path:"/dashboard/admin/bookings",
+        element:<AdminBookingManagement/>
       }
     ]
   },
@@ -88,6 +106,20 @@ import MyBookings from "../Dasboard/UserPage/MyBookings";
     path:"/login",
     element:<Login/>
   },
+
+  // Payment error Page
+  
+    {
+    path:"/payment-success",
+    element:<PaymentSuccess/>
+  },
+  
+    {
+    path:"/payment-failed",
+    element:<PaymentFaild/>
+  },
+
+
   {
   path: "*",
   element: <NotFound />
