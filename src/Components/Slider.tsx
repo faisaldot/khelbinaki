@@ -1,8 +1,8 @@
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
-import slider1 from "../assets/slider1.jpg";
-import slider2 from "../assets/slider2.jpg";
-import slider3 from "../assets/slider3.webp";
+// import slider1 from "../assets/slider1.jpg";
+// import slider2 from "../assets/slider2.jpg";
+// import slider3 from "../assets/slider3.webp";
 
 // Import Swiper styles
 import "swiper/css";
@@ -27,21 +27,21 @@ export default function Slider() {
       >
         <SwiperSlide>
           <img
-            src={slider1}
+            src={"https://media.istockphoto.com/id/511620103/photo/kids-soccer-blur.jpg?s=612x612&w=0&k=20&c=CGEXJqJxiv6PF5_bn4WD2C4tmoplC9ldzTp-vfKDveQ="}
             alt="Slide 1"
             className="h-80 w-full object-cover rounded-xl"
           />
         </SwiperSlide>
         <SwiperSlide>
           <img
-            src={slider2}
+            src={"https://5.imimg.com/data5/SELLER/Default/2023/9/340024115/HG/IX/HQ/5746244/pranav-sports-50-mm-fifa-approved-football-turf-dual-tone-500x500.jpeg"}
             alt="Slide 2"
             className="h-80 w-full object-cover rounded-xl"
           />
         </SwiperSlide>
         <SwiperSlide>
           <img
-            src={slider3}
+            src={"https://goatarenaturf.in/uploads/blog/banner241226055639.png"}
             alt="Slide 3"
             className="h-80 w-full object-cover rounded-xl"
           />

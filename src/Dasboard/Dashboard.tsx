@@ -1,67 +1,162 @@
 import { Link, NavLink, Outlet } from "react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { 
+  Menu, 
+  X,  
+  Settings, 
+  HelpCircle,
+  ChevronRight,
+  User
+} from "lucide-react";
 import Logo from "../../public/KhelbaNakiLogo.png";
 import { navConfig } from "../Config/navConfig";
+import { useAuth } from "../Hooks/useAuth";
 
-const DashboardLayout = ({ role = "user" }: { role?: "user" | "admin" | "manager" }) => {
-  const [isOpen, setIsOpen] = useState(false);
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    isActive
-      ? "sm:px-4 px-2 py-2 rounded-t-lg text-green-700 font-medium border-b-2 border-green-600 bg-white shadow-sm"
-      : "px-4 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-t-lg transition";
 
-  const links = navConfig[role];
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Top Navbar */}
-      <header className="w-full border-b-2 border-green-600">
-        <div className="flex items-center justify-between px-4 md:px-8 py-2">
-          {/* Logo */}
-          <Link to={"/"} className="flex items-center gap-2">
-            <img src={Logo} alt="Logo" className="w-20" />
+
+
+
+//  admin menus   
+
+//  Get all turf  ,  get all users 
+
+const DashboardLayout = () => {
+  const {user}=useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const links = navConfig[user?.role];
+
+  // Sidebar menu items with icons
+  const sidebarMenuItems = [...links];
+
+
+
+  const bottomItems = [
+    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: HelpCircle, label: 'Support & Help', path: '/help' }
+  ];
+
+  const SidebarContent = () => (
+    <div className="h-full bg-gradient-to-b from-green-700 to-green-800 text-white flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-green-600/40">
+        <div className="flex items-center justify-between mt-16">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={Logo} alt="Logo" className="w-8 h-8 rounded-lg bg-white p-1" />
+            {!isCollapsed && (
+              <span className="font-bold text-lg tracking-wide">KhelbaNaki</span>
+            )}
           </Link>
-          {/* Desktop Tabs */}
-          <nav className="hidden md:flex gap-4">
-            {links.map((link) => (
-              <NavLink key={link.path} to={link.path} className={navLinkClass}>
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Mobile Toggle */}
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-green-700 hover:bg-green-200 rounded"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:block p-1 hover:bg-green-600/40 rounded transition-colors"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            <ChevronRight 
+              size={16} 
+              className={`rounded transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+            />
           </button>
         </div>
+      </div>
 
-        {/* Mobile Tab Menu */}
-        {isOpen && (
-          <nav className="md:hidden flex gap-3 px-4 pb-3 overflow-x-auto scrollbar-hide">
-            {links.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={navLinkClass}
-                onClick={() => setIsOpen(false)}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+      {/* Workspace Section */}
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+            <User size={14} />
+          </div>
+          {!isCollapsed && (
+            <span className="text-sm font-medium opacity-90">{user?.name}</span>
+          )}
+        </div>
+      
+      </div>
+
+      {/* Menu Section */}
+      <div className="flex-1 p-4">
+        {!isCollapsed && (
+          <div className="text-xs font-medium opacity-70 mb-3 tracking-wider">MENU</div>
         )}
-      </header>
+        <div className="space-y-1">
+          {sidebarMenuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+    `flex items-center gap-3 p-2 rounded-lg transition-colors group 
+     ${isActive ? "bg-green-600/40" : "hover:bg-green-600/40"}`
+  }
+            >
+              {item.icon && <item.icon size={18} className="text-white/90 group-hover:text-white" />}
+              {!isCollapsed && (
+                <span className="text-sm">{item.label}</span>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
+      {/* Bottom Section */}
+      <div className="p-4 border-t border-green-600/40">
+        <div className="space-y-1">
+          {bottomItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={"/about"}
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-green-600/40 transition-colors group"
+            >
+              <item.icon size={18} className="text-white/90 group-hover:text-white" />
+              {!isCollapsed && (
+                <span className="text-sm">{item.label}</span>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 bg-green-700 text-white rounded-lg shadow-lg hover:bg-green-800 transition-colors"
+      >
+        {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Desktop Sidebar */}
+      <aside className={`hidden lg:block h-screen ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out`}>
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <aside 
+        className={`fixed top-0 left-0 z-40 w-64 h-screen transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent />
+      </aside>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col transition-all duration-300">
+        {/* Main Content */}
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

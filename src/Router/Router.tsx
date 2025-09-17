@@ -16,8 +16,17 @@ import DashboardLayout from "../Dasboard/Dashboard";
 import AdminStatistic from "../Dasboard/AdminDashboard/AdminStatistic";
 import AdminBookingManagement from "../Dasboard/AdminDashboard/AdminBookingManagement";
 import AdminTurfManagement from "../Dasboard/AdminDashboard/AdminTurfManagement";
-import PaymentSuccess from "../Pages/PaymentSuccess";
-import PaymentFaild from "../Pages/PaymentFaild";
+import  { BookingSuccessPage } from "../Pages/PaymentSuccess";
+import  { BookingFailedPage } from "../Pages/PaymentFaild";
+import ForgotPassword from "../AuthPage/ForgetPassword";
+import { ResetPassword } from "../AuthPage/ResetPassword";
+import ProtectedRoute from "./ProtectedRoute";
+import { BookingCancelledPage } from "../Pages/PaymentCancel";
+import ManagerStatistics from "../Dasboard/ManagerDashboard/ManagerStatistics";
+import ManageTurfs from "../Dasboard/ManagerDashboard/ManageTurfs";
+import ManageUsers from "../Dasboard/ManagerDashboard/ManageUsers";
+import CreateAdmin from "../Dasboard/ManagerDashboard/CreateAdmin";
+import CreateTurfs from "../Dasboard/ManagerDashboard/CreateTurfs";
 
 
  const router = createBrowserRouter([
@@ -42,7 +51,7 @@ import PaymentFaild from "../Pages/PaymentFaild";
         element:<AboutUs/>
       },
       {
-        path:"/turf/:id",
+        path:"/turfs/:slug",
         element:<TurfDetails/>
       },
       {
@@ -66,14 +75,20 @@ import PaymentFaild from "../Pages/PaymentFaild";
     children:[
       {
         path:"/dashboard/profile",
-        element:<Profile/>
+        element:
+        <ProtectedRoute>
+          <Profile/>
+        </ProtectedRoute>
       },
       {
         path:"/dashboard/my-bookings",
         element:<MyBookings/>
       },
 
-      // admin route 
+
+
+
+      // admin route ------------>
       {
         path:"/dashboard/admin/statistic",
         element:<AdminStatistic/>
@@ -85,7 +100,31 @@ import PaymentFaild from "../Pages/PaymentFaild";
       {
         path:"/dashboard/admin/bookings",
         element:<AdminBookingManagement/>
-      }
+      },
+      
+      // manager route -------------->
+      {
+        path:"/dashboard/manager/statistics",
+        element:<ManagerStatistics/>,
+      },
+      {
+        path:"/dashboard/manager/turfs",
+        element:<ManageTurfs/>,
+      },
+      {
+        path:"/dashboard/manager/users",
+        element:<ManageUsers/>,
+      },
+      {
+        path:"/dashboard/manager/admin-create",
+        element:<CreateAdmin/>,
+      },
+      {
+        path:"/dashboard/manager/create-turf",
+        element:<CreateTurfs/>,
+      },
+
+
     ]
   },
 
@@ -95,28 +134,40 @@ import PaymentFaild from "../Pages/PaymentFaild";
 
   // Auth page  -------------->
   {
-    path:"/register",
+    path:"/auth/register",
     element:<Register/>
   },
   {
-    path:"/verify-otp/:email",
+    path:"/auth/verify-otp",
     element:<VerifyEmail/>
   },
   {
-    path:"/login",
+    path:"/auth/login",
     element:<Login/>
+  },
+  {
+    path:"/auth/forget-password",
+    element:<ForgotPassword/>
+  },
+  {
+    path:"/reset-password/:token",
+    element:<ResetPassword/>
   },
 
   // Payment error Page
   
     {
-    path:"/payment-success",
-    element:<PaymentSuccess/>
+    path:"/booking-success",
+    element:<BookingSuccessPage/>
   },
   
     {
-    path:"/payment-failed",
-    element:<PaymentFaild/>
+    path:"/booking-failed",
+    element:<BookingFailedPage/>
+  },
+    {
+    path:"/booking-cancelled",
+    element:<BookingCancelledPage/>
   },
 
 

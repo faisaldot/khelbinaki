@@ -149,3 +149,7 @@
 .animate-slide-right {
   animation: slideRight 20s linear infinite;
 }
+
+button {
+  cursor: pointer;
+}

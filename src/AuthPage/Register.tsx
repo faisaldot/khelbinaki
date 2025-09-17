@@ -1,61 +1,40 @@
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from "../../public/KhelbaNakiLogo.png";
-import { useNavigate } from "react-router";
-import { userCreate } from "../api/auth";
-import { successToast, errorToast } from "../utils/toast";
-import { useAuth } from "../context/AuthContext";
-
-
-type RegisterFormInputs = {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+import { useAuth } from "../Hooks/useAuth";
+import type { RegisterData } from "../types/api.types";
+import { registerSchema } from "../lib/validation";
 
 const Register: React.FC = () => {
-  const navigate= useNavigate();
-  const {setEmail}=useAuth();
+  const { register: registerUser, isLoading } = useAuth();
 
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<RegisterFormInputs>();
-
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-
-
-// submit data and create user and opt send there ------->
-const onSubmit = async (data: RegisterFormInputs) => {
-  try {
-    setIsSubmitting(true);
-    const res = await userCreate(data);
-      setEmail(data?.email)
-
-    if (res?.data?.message?.includes("Registration successful")) {
-      successToast("Registration successful! Please check your email.");
-      navigate(`/verify-otp/${data.email}`);
-    } else {
-      errorToast(res?.data?.message ||" Something Error" );
-      navigate(`/verify-otp/${data.email}`);
-
-    }
-  } catch (err) {
-    errorToast("Registration failed. Try again.");
-    console.error(err);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+    },
+  });
 
 
 
 
-
+  
+  const onSubmit = (data: RegisterData) => {
+    console.log("Form data being submitted:", data);
+    registerUser(data, {
+      onSuccess: () => {
+        reset();
+      },
+    });
+  };
 
 
 
@@ -92,7 +71,7 @@ const onSubmit = async (data: RegisterFormInputs) => {
               <input
                 type="text"
                 placeholder="User name"
-                {...register("name", { required: "Full Name is required" })}
+                {...register("name")}
                 className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
               />
               {errors.name && (
@@ -106,17 +85,25 @@ const onSubmit = async (data: RegisterFormInputs) => {
               <input
                 type="email"
                 placeholder="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: "Enter a valid email",
-                  },
-                })}
+                {...register("email")}
                 className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* phone */}
+            <div>
+              <label className="block text-gray-600 font-medium">Phone</label>
+              <input
+                type="number"
+                placeholder="phone"
+                {...register("phone")}
+                className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
               )}
             </div>
 
@@ -126,13 +113,7 @@ const onSubmit = async (data: RegisterFormInputs) => {
               <input
                 type="password"
                 placeholder="********"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
+                {...register("password")}
                 className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
               />
               {errors.password && (
@@ -140,42 +121,24 @@ const onSubmit = async (data: RegisterFormInputs) => {
               )}
             </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-gray-600 font-medium">Confirm Password</label>
-              <input
-                type="password"
-                placeholder="********"
-                {...register("confirmPassword", {
-                  required: "Confirm Password is required",
-                  validate: (value) =>
-                    value === watch("password") || "Passwords do not match",
-                })}
-                className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-
             {/* Submit Button */}
-            <button
+            <button 
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className={`w-full py-2.5 rounded font-semibold transition shadow-md ${
-                isSubmitting
+                isSubmitting || isLoading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800"
               }`}
             >
-              {isSubmitting ? "Signing Up..." : "SIGN UP"}
+              {isSubmitting || isLoading ? "Signing Up..." : "SIGN UP"}
             </button>
           </form>
 
           <p className="mt-6 text-sm text-gray-600 text-center">
             Already have an account?{" "}
             <a
-              href="/login"
+              href="/auth/login"
               className="text-green-600 font-semibold hover:underline"
             >
               Sign in
@@ -183,7 +146,7 @@ const onSubmit = async (data: RegisterFormInputs) => {
           </p>
         </div>
 
-        {/* Right Side (Optional Image Panel) */}
+        {/* Right Side (Image Panel) */}
         <div
           className="hidden lg:flex w-1/2 bg-cover bg-center relative"
           style={{

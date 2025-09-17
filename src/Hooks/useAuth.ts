@@ -34,18 +34,18 @@ export function useAuth() {
 			return {
 				message: loginData.message,
 				data: {
-					user: loginData.data?.user,
-					accessToken: loginData.data?.accessToken,
+					user: loginData?.user,
+					accessToken: loginData?.accessToken,
 				},
 			};
 		},
 		onSuccess: ({ message, data }) => {
-			console.log("Login successfull:", data?.user?.email);
+			console.log("Login successfully:", data?.user?.email);
 
 			if (data) {
 				login(data.user, data.accessToken, "cookie-stored");
 				toast.success(message);
-				navigate("/dashboard");
+				navigate("/");
 			}
 		},
 		onError: (error: AxiosError<ApiError>) => {
@@ -64,16 +64,17 @@ export function useAuth() {
 				data,
 			);
 			const registerData = response.data as any;
+			console.log(registerData);
 			return {
-				message: registerData.message,
-				data: { email: registerData.data?.email },
+				message: registerData?.message,
+				email: registerData?.email
 			};
 		},
-		onSuccess: ({ message, data }) => {
-			console.log("Registration successful", data?.email);
+		onSuccess: ({ message, email }) => {
+			console.log("Registration successful", email);
 			toast.success(message);
-			if (data) {
-				sessionStorage.setItem("otp-email", data.email);
+			if (email) {
+				sessionStorage.setItem("otp-email", email);
 				navigate("/auth/verify-otp");
 			}
 		},
@@ -84,6 +85,13 @@ export function useAuth() {
 			toast.error(errorMessage);
 		},
 	});
+
+
+
+
+
+
+
 
 	// Verify OTP mutation
 	const verifyOtpMutation = useMutation({
@@ -96,21 +104,23 @@ export function useAuth() {
 				}>
 			>("/auth/verify-otp", data);
 			const verificationData = response.data as any;
+			console.log(verificationData);
 			return {
-				message: verificationData.message,
+				message: verificationData?.message,
 				data: {
-					user: verificationData.data?.user,
-					accessToken: verificationData.data?.accessToken,
+					user: verificationData?.user,
+					accessToken: verificationData?.accessToken,
 				},
 			};
 		},
 		onSuccess: ({ data, message }) => {
-			console.log("OTP verification successful for: ", data?.user?.email);
+			console.log("OTP verification successful for: ", data);
+			console.log("OTP verification successful message: ", message);
 			if (data) {
 				login(data.user, data.accessToken, "cookie-stored");
 				toast.success(message);
 				sessionStorage.removeItem("otp-email");
-				navigate("/dashboard");
+				navigate("/");
 			}
 		},
 		onError: (error: AxiosError<ApiError>) => {
@@ -120,6 +130,9 @@ export function useAuth() {
 			toast.error(errorMessage);
 		},
 	});
+
+
+
 
 	// Forgot Password mutation
 	const forgotPasswordMutation = useMutation({
@@ -133,7 +146,7 @@ export function useAuth() {
 		},
 		onSuccess: ({ message }) => {
 			toast.success(message);
-			navigate("/auth");
+			navigate("/auth/login");
 		},
 		onError: (error: AxiosError<ApiError>) => {
 			console.error("Forgot password error:", error.response?.data);
@@ -161,21 +174,19 @@ export function useAuth() {
 			>(`/auth/reset-password/${token}`, { password });
 
 			const resetData = response.data as any;
-
+			console.log(resetData);
 			return {
 				message: resetData.message,
-				data: {
-					user: resetData.data?.user,
-					accessToken: resetData.data?.accessToken,
-				},
+					user: resetData?.user,
+					accessToken: resetData?.accessToken,
 			};
 		},
-		onSuccess: ({ data, message }) => {
-			console.log("Password reset successful", data.user?.email);
-			if (data) {
-				login(data.user, data.accessToken, "cookie-stored");
+		onSuccess: ({ user,accessToken, message }) => {
+			console.log("Password reset successful", user);
+			if (user) {
+				login(user, accessToken, "cookie-stored");
 				toast.success(message);
-				navigate("/dashboard");
+				navigate("/");
 			}
 		},
 		onError: (error: AxiosError<ApiError>) => {

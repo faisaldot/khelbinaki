@@ -1,101 +1,74 @@
-import { useState } from "react";
+import { XCircle } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const PaymentFailed = () => {
-  const [errorCode] = useState("ERR-502-XYZ");
 
-  const copyErrorCode = () => {
-    navigator.clipboard.writeText(errorCode).then(() => {
-      alert("Error Code copied: " + errorCode);
-    });
-  };
+// Booking Failed Page
+export const BookingFailedPage = () => {
+  const [transactionId, setTransactionId] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    setTransactionId(urlParams.get('transactionId') || '')
+    setError(urlParams.get('error') || '')
+  }, [])
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-red-50 to-red-100">
-      {/* Main */}
-      <main className="flex flex-col items-center justify-center flex-grow text-center p-4 md:p-6">
-        {/* Error Icon */}
-        <div className="flex items-center justify-center w-20 h-20 rounded-full bg-red-100 shadow-md">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 text-red-600"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-          </svg>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <div className="mb-6">
+          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Payment Failed
+          </h1>
+          <p className="text-gray-600">
+            Unfortunately, your payment could not be processed.
+          </p>
         </div>
-
-        <h1 className="mt-6 text-2xl sm:text-4xl font-bold text-gray-800">
-          Payment Failed
-        </h1>
-        <p className="mt-2 text-gray-600 text-sm sm:text-base">
-          Oops! Something went wrong while processing your booking.
-        </p>
-
-        {/* Error Details card */}
-        <div className="mt-8 w-full max-w-lg bg-white/70 backdrop-blur-lg border rounded-2xl p-6 shadow-lg space-y-4 text-left">
-          <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">
-            Failure Details
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 text-sm sm:text-base">
-            <div>
-              <p className="text-gray-500">Attempted Amount</p>
-              <p className="font-medium">৳1200</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Date</p>
-              <p className="font-medium">September 12, 2025</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Time Slot</p>
-              <p className="font-medium">5am - 7am</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Booking ID</p>
-              <p className="font-medium">BK-20250911-002</p>
-            </div>
+        
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="text-sm">
+            <p className="text-red-800 mb-1">
+              <span className="font-semibold">Transaction ID:</span>
+            </p>
+            <p className="text-red-700 font-mono text-xs break-all">
+              {transactionId || 'N/A'}
+            </p>
           </div>
-
-          {/* Error Code with Copy */}
-          <div className="flex justify-between items-center text-sm sm:text-base pt-3 border-t">
-            <span className="text-gray-500">Error Code:</span>
-            <div className="flex items-center gap-2">
-              <span className="font-medium select-text">{errorCode}</span>
-              <button
-                onClick={copyErrorCode}
-                className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
+          {error && (
+            <p className="text-red-600 text-xs mt-2">
+              Error: {error}
+            </p>
+          )}
         </div>
 
-        {/* Buttons */}
-        <div className="mt-8 flex gap-4">
-          <a
-            href="/"
-            className="inline-flex items-center justify-center h-11 px-6 text-sm font-medium text-white bg-red-600 rounded-xl shadow-md hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            Return to Homepage
-          </a>
-          <a
-            href="/support"
-            className="inline-flex items-center justify-center h-11 px-6 text-sm font-medium text-red-600 border border-red-600 rounded-xl hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            Contact Support
-          </a>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <p className="text-blue-800 text-sm">
+            <strong>What to do next:</strong>
+          </p>
+          <ul className="text-blue-700 text-sm mt-2 list-disc list-inside text-left">
+            <li>Check your payment method details</li>
+            <li>Ensure sufficient balance</li>
+            <li>Try a different payment method</li>
+            <li>Contact support if the issue persists</li>
+          </ul>
         </div>
-      </main>
+
+        <div className="space-y-3">
+          <button 
+            onClick={() => window.history.back()}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
     </div>
-  );
-};
-
-export default PaymentFailed;
+  )
+}

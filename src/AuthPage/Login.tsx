@@ -1,28 +1,41 @@
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../Hooks/useAuth";
 import Logo from "../../public/KhelbaNakiLogo.png";
-
-type LoginFormInputs = {
-  email: string;
-  password: string;
-};
+import type { LoginData } from "../types/api.types";
+import { loginSchema } from "../lib/validation";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 const Login: React.FC = () => {
+  const { login: loginUser, isLoading } = useAuth();
+
+  // inside component
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormInputs>();
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  
 
-  const onSubmit = async (data: object) => {
-    setIsSubmitting(true);
+
+
+  const onSubmit = (data: LoginData) => {
     console.log("Login Data:", data);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 2000);
+    loginUser(data, {
+      onSuccess: () => {
+        reset();
+      },
+    });
   };
 
   return (
@@ -35,7 +48,6 @@ const Login: React.FC = () => {
             "url('https://images6.alphacoders.com/749/749388.jpg')",
         }}
       >
-        {/* Optional: add semi-transparent overlay */}
         <div className="absolute inset-0 backdrop-blur-sm"></div>
       </div>
 
@@ -59,13 +71,7 @@ const Login: React.FC = () => {
               <input
                 type="email"
                 placeholder="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: "Enter a valid email",
-                  },
-                })}
+                {...register("email")}
                 className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
               />
               {errors.email && (
@@ -76,54 +82,55 @@ const Login: React.FC = () => {
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-gray-600 font-medium">Password</label>
-              <input
-                type="password"
-                placeholder="********"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
-                </p>
-              )}
-              {/* Forgot Password Link */}
+           <div>
+  <label className="block text-gray-600 font-medium">Password</label>
+  <div className="relative">
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="********"
+      {...register("password")}
+      className="w-full px-4 py-3 border rounded focus:ring-2 focus:ring-green-600 outline-none pr-10"
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword((prev) => !prev)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+    >
+      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+  {errors.password && (
+    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+  )}
+
+  {/* Forgot Password Link */}
   <p className="text-right mt-2">
     <a
-      href="/forgot-password"
+      href="/auth/forget-password"
       className="text-sm text-green-600 hover:underline"
     >
       Forgot Password?
     </a>
   </p>
-            </div>
-
+</div>
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className={`w-full py-3 rounded font-semibold transition shadow-md ${
-                isSubmitting
+                isSubmitting || isLoading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800"
               }`}
             >
-              {isSubmitting ? "Signing In..." : "SIGN IN"}
+              {isSubmitting || isLoading ? "Signing In..." : "SIGN IN"}
             </button>
           </form>
 
           <p className="mt-6 text-sm text-gray-600 text-center">
             Don’t have an account?{" "}
             <a
-              href="/register"
+              href="/auth/register"
               className="text-green-600 font-semibold hover:underline"
             >
               Sign up
@@ -131,7 +138,7 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Right Side (Optional Image Panel) */}
+        {/* Right Side (Image Panel) */}
         <div
           className="hidden lg:flex w-1/2 bg-cover bg-center relative"
           style={{
