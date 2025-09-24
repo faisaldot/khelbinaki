@@ -30,9 +30,10 @@ export function useAuth() {
 				}>
 			>("/auth/login", credentials);
 
-			const loginData = response.data as  any;
+			const loginData = response.data.data as  any;
+			const loginMessage = response.data.message as  any;
 			return {
-				message: loginData.message,
+				message: loginMessage,
 				data: {
 					user: loginData?.user,
 					accessToken: loginData?.accessToken,
@@ -63,10 +64,11 @@ export function useAuth() {
 				"/auth/register",
 				data,
 			);
-			const registerData = response.data as any;
+			const registerData = response.data.data as any;
+			const registerMessage = response.data.message as any;
 			console.log(registerData);
 			return {
-				message: registerData?.message,
+				message: registerMessage,
 				email: registerData?.email
 			};
 		},
@@ -103,10 +105,11 @@ export function useAuth() {
 					accessToken: string;
 				}>
 			>("/auth/verify-otp", data);
-			const verificationData = response.data as any;
+			const verificationData = response.data.data as any;
+			const verificationMessage = response.data.message as any;
 			console.log(verificationData);
 			return {
-				message: verificationData?.message,
+				message:verificationMessage,
 				data: {
 					user: verificationData?.user,
 					accessToken: verificationData?.accessToken,
@@ -200,7 +203,7 @@ export function useAuth() {
 	// Logout function
 	const handleLogout = () => {
 		logout();
-		navigate("/auth");
+		navigate("/");
 		toast.success("Logged out successfully", { richColors: true });
 	};
 

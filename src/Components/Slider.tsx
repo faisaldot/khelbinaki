@@ -27,21 +27,21 @@ export default function Slider() {
       >
         <SwiperSlide>
           <img
-            src={"https://media.istockphoto.com/id/511620103/photo/kids-soccer-blur.jpg?s=612x612&w=0&k=20&c=CGEXJqJxiv6PF5_bn4WD2C4tmoplC9ldzTp-vfKDveQ="}
+            src={"https://www.shutterstock.com/image-vector/soccer-template-design-football-banner-260nw-2185778153.jpg"}
             alt="Slide 1"
             className="h-80 w-full object-cover rounded-xl"
           />
         </SwiperSlide>
         <SwiperSlide>
           <img
-            src={"https://5.imimg.com/data5/SELLER/Default/2023/9/340024115/HG/IX/HQ/5746244/pranav-sports-50-mm-fifa-approved-football-turf-dual-tone-500x500.jpeg"}
+            src={"https://www.shutterstock.com/shutterstock/photos/2188004839/display_1500/stock-vector-soccer-template-design-football-banner-sport-layout-design-green-theme-vector-illustration-2188004839.jpg"}
             alt="Slide 2"
             className="h-80 w-full object-cover rounded-xl"
           />
         </SwiperSlide>
         <SwiperSlide>
           <img
-            src={"https://goatarenaturf.in/uploads/blog/banner241226055639.png"}
+            src={"https://img.freepik.com/premium-vector/football-soccer-abstract-background-football-tournament-soccer-cup-green-field_731129-38.jpg"}
             alt="Slide 3"
             className="h-80 w-full object-cover rounded-xl"
           />

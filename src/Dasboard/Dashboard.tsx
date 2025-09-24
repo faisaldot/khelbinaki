@@ -36,7 +36,7 @@ const DashboardLayout = () => {
 
   const bottomItems = [
     { icon: Settings, label: 'Settings', path: '/settings' },
-    { icon: HelpCircle, label: 'Support & Help', path: '/help' }
+    { icon: HelpCircle, label: 'Support & Help', path: '/contact' }
   ];
 
   const SidebarContent = () => (
@@ -105,7 +105,7 @@ const DashboardLayout = () => {
           {bottomItems.map((item) => (
             <NavLink
               key={item.path}
-              to={"/about"}
+              to={"/contact"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-green-600/40 transition-colors group"
             >
               <item.icon size={18} className="text-white/90 group-hover:text-white" />

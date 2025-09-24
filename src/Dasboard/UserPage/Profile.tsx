@@ -50,10 +50,11 @@ const ProfileManagement = () => {
       // Refetch profile data after update
       console.log(message);
       queryClient.invalidateQueries(["profile"]);
-      toast.success(message)
+      toast.success(message || "Profile update successfully")
     },
     onError:({message})=>{
       console.log(message, "Failed to update");
+      toast.success("Failed to update")
     }
   });
 
@@ -168,11 +169,12 @@ const ProfileManagement = () => {
           </label>
           <div className="relative">
             <input
+            disabled
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 placeholder-gray-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 outline-none hover:border-gray-300"
+              className="w-full disabled:text-gray-400 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 placeholder-gray-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 outline-none hover:border-gray-300"
               placeholder="your.email@example.com"
             />
           </div>

@@ -1,19 +1,205 @@
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router";
-import { MapPin, Clock, Star, Calendar, ChevronDown, Users, Wifi, Car, Shield } from "lucide-react";
-import { useState } from "react";
-import type { ApiResponse, Turf } from "../types/api.types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams, Link } from "react-router";
+import { MapPin, Clock, Calendar as CalendarIcon, ChevronDown, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import type { AxiosError } from "axios";
+import type { ApiResponse, Turf, ApiError, CreateBookingData, Booking, TurfAvailability, AvailabilitySlot } from "../types/api.types";
 import api from "../lib/api";
 import { PageLoader } from "./PlaceHolder";
-import axios from "axios";
+import { useAuth } from "../Hooks/useAuth";
+import { usePayment } from "../Hooks/api/usePayment";
+
+// Simple Calendar Component
+const Calendar = ({ selected, onSelect, disabled = () => false, className = "" }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const today = new Date();
+  
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const firstDayWeek = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    const days = [];
+    
+    // Previous month's days
+    for (let i = firstDayWeek - 1; i >= 0; i--) {
+      const prevMonth = new Date(year, month - 1, 0);
+      days.push({
+        date: new Date(year, month - 1, prevMonth.getDate() - i),
+        isCurrentMonth: false
+      });
+    }
+    
+    // Current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push({
+        date: new Date(year, month, day),
+        isCurrentMonth: true
+      });
+    }
+    
+    // Next month's days to fill the grid
+    const remainingDays = 42 - days.length;
+    for (let day = 1; day <= remainingDays; day++) {
+      days.push({
+        date: new Date(year, month + 1, day),
+        isCurrentMonth: false
+      });
+    }
+    
+    return days;
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long' 
+    });
+  };
+
+  const isSameDay = (date1, date2) => {
+    return date1?.toDateString() === date2?.toDateString();
+  };
+
+  const isToday = (date) => {
+    return isSameDay(date, today);
+  };
+
+  const isPast = (date) => {
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return dateOnly < todayOnly;
+  };
+
+  const days = getDaysInMonth(currentDate);
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <div className={`bg-white border border-gray-200 rounded-lg p-4 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          ←
+        </button>
+        <h3 className="font-semibold text-gray-800">
+          {formatDate(currentDate)}
+        </h3>
+        <button
+          onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          →
+        </button>
+      </div>
+
+      {/* Week days */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {weekDays.map(day => (
+          <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar days */}
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day, index) => {
+          const isDisabled = disabled(day.date) || isPast(day.date);
+          const isSelected = isSameDay(selected, day.date);
+          const isTodayDate = isToday(day.date);
+          
+          return (
+            <button
+              key={index}
+              onClick={() => !isDisabled && day.isCurrentMonth && onSelect(day.date)}
+              disabled={isDisabled}
+              className={`
+                p-2 text-sm rounded-lg transition-colors
+                ${!day.isCurrentMonth ? 'text-gray-300' : ''}
+                ${isSelected ? 'bg-green-600 text-white' : ''}
+                ${isTodayDate && !isSelected ? 'bg-blue-100 text-blue-600 font-semibold' : ''}
+                ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100'}
+                ${day.isCurrentMonth && !isDisabled && !isSelected ? 'text-gray-700' : ''}
+              `}
+            >
+              {day.date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const TurfDetails = () => {
   const { slug } = useParams();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [showTimeSlots, setShowTimeSlots] = useState(false);
 
+  const { isAuthenticated, user } = useAuth();
+  const { initPaymentAsync, isLoading: isPaymentLoading } = usePayment();
+  const queryClient = useQueryClient();
 
+  // Helper functions - All defined at top to avoid hoisting issues
+  const getCurrentDayType = (date) => {
+    const day = new Date(date).getDay();
+    return (day === 5 || day === 6) ? 'friday-saturday' : 'sunday-thursday';
+  };
+
+  const formatTime = (time) => {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const getAmenityIcon = (amenity) => {
+    const icons = {
+      'Floodlights': '💡',
+      'Parking': '🚗',
+      'Changing Room': '🚿',
+      'Gallery': '👥',
+      'Wifi': '📶',
+      'WiFi': '📶',
+      'Security': '🛡️'
+    };
+    return icons[amenity] || '✅';
+  };
+
+  // BUG FIX 1: Check if time slot has already passed for today's date
+  const isTimeSlotPassed = (startTime, selectedDate) => {
+    const today = new Date();
+    const selectedDateStr = selectedDate.toDateString();
+    const todayStr = today.toDateString();
+    
+    // If selected date is not today, no need to check time
+    if (selectedDateStr !== todayStr) {
+      return false;
+    }
+    
+    // If it's today, check if the time slot has passed
+    const currentHour = today.getHours();
+    const currentMinutes = today.getMinutes();
+    const currentTotalMinutes = currentHour * 60 + currentMinutes;
+    
+    const [slotHour, slotMinutes] = startTime.split(':').map(Number);
+    const slotTotalMinutes = slotHour * 60 + slotMinutes;
+    
+    return slotTotalMinutes <= currentTotalMinutes;
+  };
+
+  // Queries
   const { data, isLoading, error } = useQuery({
     queryKey: ["turfDetails", slug],
     queryFn: async () => {
@@ -23,65 +209,200 @@ const TurfDetails = () => {
     enabled: !!slug,
   });
 
-  const getAmenityIcon = (amenity) => {
-    const icons = {
-      'Floodlights': '💡',
-      'Parking': '🚗',
-      'Changing Room': '🚿',
-      'Gallery': '👥',
-      'Wifi': '📶',
-      'Security': '🛡️'
-    };
-    return icons[amenity] || '✅';
-  };
+  // Query to fetch turf availability with proper refetch
+  const { data: availability, isLoading: isAvailabilityLoading, refetch: refetchAvailability } = useQuery({
+    queryKey: ["turf-availability", data?.data?._id, selectedDate?.toDateString()],
+    queryFn: async () => {
+      if (!selectedDate || !data?.data?._id) return null;
+      const dateStr = selectedDate.toISOString().split("T")[0];
+      const response = await api.get<ApiResponse<TurfAvailability>>(
+        `/turfs/${data.data._id}/availability`,
+        { params: { date: dateStr } }
+      );
+      return response.data.data;
+    },
+    enabled: !!selectedDate && !!data?.data?._id,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always consider data stale for real-time updates
+    cacheTime: 0, // Don't cache availability data
+  });
 
-  const getCurrentDayType = (date) => {
-    const day = new Date(date).getDay();
-    return (day === 5 || day === 6) ? 'friday-saturday' : 'sunday-thursday';
-  };
+  // Effect to refetch availability when selectedDate changes
+  useEffect(() => {
+    if (selectedDate && data?.data?._id) {
+      refetchAvailability();
+    }
+  }, [selectedDate, data?.data?._id, refetchAvailability]);
 
-  const getAvailableTimeSlots = () => {
-    if (!data?.data) return [];
-    const dayType = getCurrentDayType(selectedDate);
+  // Mutation to create a new booking
+  const bookingMutation = useMutation({
+    mutationFn: async (data: CreateBookingData): Promise<Booking> => {
+      console.log("Making booking API call with:", data);
+      const response = await api.post<ApiResponse<Booking>>("/bookings", data);
+      console.log("Booking API response:", response.data);
+
+      // Try different possible response structures
+      return (
+        response.data.data ||
+        (response.data as any).booking ||
+        (response.data as any)
+      );
+    },
+    onError: (error: AxiosError<ApiError>) => {
+      console.error("Booking mutation error:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to create booking.";
+      toast.error(errorMessage);
+    },
+  });
+
+  // Get price for specific time based on pricing rules
+  const getPriceForTime = (time, dateForPrice = selectedDate) => {
+    if (!data?.data?.pricingRules) return data?.data?.defaultPricePerSlot || 2000;
+    
+    const dayType = getCurrentDayType(dateForPrice);
     const rule = data.data.pricingRules.find(r => r.dayType === dayType);
-    return rule ? rule.timeSlots : [];
+    
+    if (!rule) return data?.data?.defaultPricePerSlot || 2000;
+    
+    const timeHour = parseInt(time.split(':')[0]);
+    
+    // Find which pricing slot this time falls into
+    for (const slot of rule.timeSlots) {
+      const startHour = parseInt(slot.startTime.split(':')[0]);
+      const endHour = parseInt(slot.endTime.split(':')[0]);
+      
+      if (timeHour >= startHour && timeHour < endHour) {
+        return slot.pricePerSlot;
+      }
+    }
+    
+    return data?.data?.defaultPricePerSlot || 2000;
   };
 
-  const formatTime = (time) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+  // Generate hourly time slots based on operating hours
+  const generateTimeSlots = () => {
+    if (!data?.data) return [];
+    
+    const { start, end } = data.data.operatingHours;
+    const slots = [];
+    
+    const startHour = parseInt(start.split(':')[0]);
+    const endHour = parseInt(end.split(':')[0]);
+    
+    for (let hour = startHour; hour < endHour; hour++) {
+      const startTime = `${String(hour).padStart(2, '0')}:00`;
+      const endTime = `${String(hour + 1).padStart(2, '0')}:00`;
+      
+      // BUG FIX 1: Check if time slot has passed for today
+      const hasPassedTime = isTimeSlotPassed(startTime, selectedDate);
+      
+      slots.push({
+        startTime,
+        endTime,
+        pricePerSlot: getPriceForTime(startTime, selectedDate),
+        isAvailable: !hasPassedTime, // Mark as unavailable if time has passed
+        isTimePassed: hasPassedTime
+      });
+    }
+    
+    return slots;
   };
 
-
-
-
-const handleBooking = async () => {
-  if (!selectedTimeSlot) return;
-
-  try {
-    // 1. Booking Create
-    const bookingRes = await api.post("/bookings", {
-      turf: turf?._id,
-      date: selectedDate,
-      startTime: selectedTimeSlot?.startTime,
-      endTime: selectedTimeSlot?.endTime,
+  // BUG FIX 2: Enhanced availability check with proper backend data handling
+  const getAvailableTimeSlots = () => {
+    const allSlots = generateTimeSlots();
+    
+    if (!availability?.slots) {
+      // If no backend data, just return slots with time-based availability
+      return allSlots;
+    }
+    
+    // Update availability based on backend data AND time check
+    return allSlots.map(slot => {
+      const backendSlot = availability.slots.find(
+        (availSlot: AvailabilitySlot) => availSlot.startTime === slot.startTime
+      );
+      
+      // A slot is available only if:
+      // 1. It hasn't passed the current time (for today)
+      // 2. Backend says it's available (not booked)
+      const isBackendAvailable = backendSlot?.isAvailable ?? true;
+      const finalAvailability = !slot.isTimePassed && isBackendAvailable;
+      
+      return {
+        ...slot,
+        isAvailable: finalAvailability,
+        pricePerSlot: backendSlot?.pricePerSlot ?? slot.pricePerSlot,
+        isBooked: backendSlot ? !backendSlot.isAvailable : false
+      };
     });
+  };
 
-  const bookingId=bookingRes.data.booking._id;
-    // // 2. Payment Init
-    const paymentRes = await api.post(`/payments/init/${bookingId}`);
-    // // 3. Redirect User to SSLCommerz Payment Page
-    console.log(paymentRes.data);
-  } catch (err) {
-    console.error("Booking/Payment Error:", err);
-  }
-};
+  const handleBooking = async () => {
+    if (!selectedTimeSlot || !data?.data) return;
 
+    // Additional check before booking
+    if (isTimeSlotPassed(selectedTimeSlot.startTime, selectedDate)) {
+      toast.error("This time slot has already passed. Please select a future time.");
+      setSelectedTimeSlot(null);
+      return;
+    }
 
+    try {
+      const bookingData = {
+        turf: data.data._id,
+        date: selectedDate,
+        startTime: selectedTimeSlot.startTime,
+        endTime: selectedTimeSlot.endTime,
+      };
 
+      console.log("Submitting booking data:", bookingData);
+
+      // First, create the booking
+      const booking = await bookingMutation.mutateAsync(bookingData);
+      console.log("Booking response:", booking);
+
+      const bookingId = booking._id;
+
+      if (bookingId) {
+        toast.success("Booking created successfully. Redirecting to payment...");
+
+        // Reset UI state immediately
+        setSelectedTimeSlot(null);
+        setShowTimeSlots(false);
+
+        // Force refetch availability data
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["turfDetails", slug],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["turf-availability", data.data._id, selectedDate?.toDateString()],
+          })
+        ]);
+
+        // Manually refetch to ensure immediate update
+        await refetchAvailability();
+
+        console.log("Initializing payment for booking ID:", bookingId);
+        await initPaymentAsync(bookingId);
+      } else {
+        toast.error("Booking created but no booking ID received");
+        console.error("Invalid booking response:", booking);
+      }
+    } catch (error) {
+      console.error("Booking or payment initialization failed:", error);
+      // Reset UI state on error
+      setSelectedTimeSlot(null);
+      setShowTimeSlots(false);
+    }
+  };
+
+  const isFormLoading = bookingMutation.isPending || isPaymentLoading || isAvailabilityLoading;
+  const availableSlots = getAvailableTimeSlots();
+  // Filter only available slots for showing in dropdown
+  const availableSlotsOnly = availableSlots.filter(slot => slot.isAvailable);
 
   if (isLoading) return <PageLoader />;
 
@@ -102,7 +423,6 @@ const handleBooking = async () => {
   }
 
   const turf = data.data;
-  const availableSlots = getAvailableTimeSlots();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
@@ -146,6 +466,191 @@ const handleBooking = async () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Right Column - Booking Panel */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              {!isAuthenticated ? (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                      <CalendarIcon className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Ready to Book?</h3>
+                    <p className="text-gray-600 mb-6">You must be logged in to make a booking.</p>
+                    <Link to="/auth/login" className="inline-block w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:via-green-800 hover:to-green-900 transform hover:scale-105 hover:shadow-xl transition-all duration-300 text-center">
+                      Log In to Book
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    Book Your Slot
+                  </h3>
+
+                  {/* Date Selection with Calendar */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Select Date
+                    </label>
+                    <Calendar
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        setSelectedTimeSlot(null);
+                        setShowTimeSlots(false);
+                        // Immediately refetch availability for new date
+                        setTimeout(() => refetchAvailability(), 100);
+                      }}
+                      disabled={(date) => date < new Date()}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Time Slot Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Select Time Slot
+                      {isAvailabilityLoading && (
+                        <span className="ml-2 text-xs text-gray-500">(Loading availability...)</span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowTimeSlots(!showTimeSlots)}
+                        className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-green-600 focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all outline-none"
+                        disabled={isFormLoading}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-5 h-5 text-gray-400" />
+                          <span className="text-gray-700">
+                            {selectedTimeSlot 
+                              ? `${formatTime(selectedTimeSlot.startTime)} - ${formatTime(selectedTimeSlot.endTime)}`
+                              : "Choose time slot"
+                            }
+                          </span>
+                        </div>
+                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showTimeSlots ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {showTimeSlots && (
+                        <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                          {isAvailabilityLoading ? (
+                            <div className="p-4 text-center text-gray-500">
+                              <div className="flex items-center justify-center gap-2">
+                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                Loading availability...
+                              </div>
+                            </div>
+                          ) : availableSlots.length > 0 ? (
+                            availableSlots.map((slot, idx) => {
+                              let statusText = '';
+                              let statusClass = '';
+                              
+                              if (slot.isTimePassed) {
+                                statusText = '(Time Passed)';
+                                statusClass = 'text-red-500';
+                              } else if (slot.isBooked) {
+                                statusText = '(Booked)';
+                                statusClass = 'text-orange-500';
+                              } else if (!slot.isAvailable) {
+                                statusText = '(Unavailable)';
+                                statusClass = 'text-gray-500';
+                              }
+                              
+                              return (
+                                <button
+                                  key={`${slot.startTime}-${slot.isAvailable}-${slot.isTimePassed}`}
+                                  onClick={() => {
+                                    if (slot.isAvailable) {
+                                      setSelectedTimeSlot(slot);
+                                      setShowTimeSlots(false);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 transition-colors ${
+                                    slot.isAvailable 
+                                      ? 'hover:bg-green-50 cursor-pointer' 
+                                      : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                  }`}
+                                  disabled={!slot.isAvailable || isFormLoading}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className={`font-medium ${slot.isAvailable ? 'text-gray-800' : 'text-gray-400'}`}>
+                                      {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                      {statusText && (
+                                        <span className={`ml-2 text-xs font-normal ${statusClass}`}>
+                                          {statusText}
+                                        </span>
+                                      )}
+                                    </span>
+                                    <span className={`font-bold ${slot.isAvailable ? 'text-green-600' : 'text-gray-400'}`}>
+                                      ৳{slot.pricePerSlot}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <div className="p-4 text-center text-gray-500">
+                              No slots available for selected date
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Price Display */}
+                  {selectedTimeSlot && (
+                    <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-700">Total Amount:</span>
+                        <span className="text-2xl font-bold text-green-600">৳{selectedTimeSlot?.pricePerSlot}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {formatTime(selectedTimeSlot?.startTime)} - {formatTime(selectedTimeSlot?.endTime)}
+                        <span className="ml-2 text-green-600">
+                          ({selectedDate.toLocaleDateString()})
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Book Now Button */}
+                  <button
+                    onClick={handleBooking}   
+                    disabled={!selectedTimeSlot || isFormLoading}
+                    className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:via-green-800 hover:to-green-900 transform hover:scale-105 hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none"
+                  >
+                    {isFormLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </div>
+                    ) : selectedTimeSlot ? 'Proceed to Payment' : 'Select Time Slot'}
+                  </button>
+
+                  {/* Contact Info */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 text-center mb-3">Need help? Contact us</p>
+                    <div className="flex justify-center gap-4">
+                      <button className="p-3 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                        </svg>
+                      </button>
+                      <button className="p-3 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-8">
@@ -228,7 +733,7 @@ const handleBooking = async () => {
                                 {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                               </span>
                             </div>
-                            <span className="text-2xl font-bold text-green-600">৳{slot.pricePerSlot}</span>
+                            <span className="md:text-2xl text-lg font-bold text-green-600">৳{slot.pricePerSlot} /hour</span>
                           </div>
                         ))}
                       </div>
@@ -238,7 +743,7 @@ const handleBooking = async () => {
               </div>
             </div>
 
-          {/* Gallery Section */}
+            {/* Gallery Section */}
             {turf.images?.length > 0 && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                 <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -284,130 +789,6 @@ const handleBooking = async () => {
                     src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${turf.location.coordinates?.lat || 23.8103},${turf.location.coordinates?.lng || 90.4125}&zoom=15`}
                     title="Turf Location"
                   ></iframe>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Booking Panel */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                  Book Your Slot
-                </h3>
-
-                {/* Date Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Select Date
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => {
-                        setSelectedDate(e.target.value);
-                        setSelectedTimeSlot(null);
-                      }}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Time Slot Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Select Time Slot
-                  </label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowTimeSlots(!showTimeSlots)}
-                      className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-green-600 focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all outline-none"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-700">
-                          {selectedTimeSlot 
-                            ? `${formatTime(selectedTimeSlot.startTime)} - ${formatTime(selectedTimeSlot.endTime)}`
-                            : "Choose time slot"
-                          }
-                        </span>
-                      </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showTimeSlots ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {showTimeSlots && (
-                      <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                        {availableSlots.length > 0 ? (
-                          availableSlots.map((slot, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => {
-                                setSelectedTimeSlot(slot);
-                                setShowTimeSlots(false);
-                              }}
-                              className="w-full text-left px-4 py-3 hover:bg-green-50 border-b border-gray-100 last:border-b-0 transition-colors"
-                            >
-                              <div className="flex justify-between items-center">
-                                <span className="font-medium text-gray-800">
-                                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                                </span>
-                                <span className="font-bold text-green-600">৳{slot.pricePerSlot}</span>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-gray-500">
-                            No slots available for selected date
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Price Display */}
-                {selectedTimeSlot && (
-                  <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-gray-700">Total Amount:</span>
-                      <span className="text-2xl font-bold text-green-600">৳{selectedTimeSlot?.pricePerSlot}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {formatTime(selectedTimeSlot?.startTime)} - {formatTime(selectedTimeSlot?.endTime)} 
-                      <span className="ml-2 text-green-600">({getCurrentDayType(selectedDate).replace('-', ' to ')})</span>
-                    </p>
-                  </div>
-                )}
-
-                {/* Book Now Button */}
-                <button
-                      onClick={handleBooking}   
-                  disabled={!selectedTimeSlot}
-                  className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:via-green-800 hover:to-green-900 transform hover:scale-105 hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none"
-                >
-                  {selectedTimeSlot ? 'Proceed to Payment' : 'Select Time Slot'}
-                </button>
-
-                {/* Contact Info */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 text-center mb-3">Need help? Contact us</p>
-                  <div className="flex justify-center gap-4">
-                    <button className="p-3 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                      </svg>
-                    </button>
-                    <button className="p-3 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

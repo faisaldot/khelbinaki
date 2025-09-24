@@ -10,12 +10,10 @@ import { useState } from "react";
 const Login: React.FC = () => {
   const { login: loginUser, isLoading } = useAuth();
 
-  // inside component
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -25,18 +23,10 @@ const Login: React.FC = () => {
     },
   });
 
-  
-
-
-
   const onSubmit = (data: LoginData) => {
-    console.log("Login Data:", data);
-    loginUser(data, {
-      onSuccess: () => {
-        reset();
-      },
-    });
+    loginUser(data)
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">

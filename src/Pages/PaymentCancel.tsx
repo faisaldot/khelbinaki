@@ -51,7 +51,7 @@ export const BookingCancelledPage = () => {
             Complete Payment
           </button>
           <button 
-            onClick={() => window.location.href = '/my-bookings'}
+            onClick={() => window.location.href = '/dashboard/my-bookings'}
             className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
           >
             View My Bookings

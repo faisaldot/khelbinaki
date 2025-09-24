@@ -13,16 +13,18 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({
 	children,
 	requiredRole,
-	redirectTo = "/auth",
+	redirectTo = "/",
 }: ProtectedRouteProps) {
 	const { user, isAuthenticated } = authStore();
+	console.log(isAuthenticated,requiredRole);
 	const location = useLocation();
-
+	
+	console.log(user);
 	if (!isAuthenticated) {
 		return <Navigate to={redirectTo} state={{ from: location }} replace />;
 	}
 
-	if (requiredRole && user?.role !== requiredRole && user?.role !== "manager") {
+	if (requiredRole && user?.role !== requiredRole) {
 		return <Navigate to="/unauthorized" state={{ from: location }} replace />;
 	}
 

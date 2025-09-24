@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
 
@@ -22,7 +22,7 @@ const ManageTurfs = () => {
   // Mutation: Update turf (active/inactive)
   const updateTurfMutation = useMutation({
     mutationFn: async ({ turfId, isActive }) => {
-      const res = await api.patch(`/admin/turfs/${turfId}`, { isActive });
+      const res = await api.patch(`/turfs/${turfId}`, { isActive });
       return res.data;
     },
     onSuccess: (data) => {
@@ -37,11 +37,11 @@ const ManageTurfs = () => {
   // Mutation: Delete turf
   const deleteTurfMutation = useMutation({
     mutationFn: async (turfId) => {
-      const res = await api.delete(`/admin/turfs/${turfId}`);
+      const res = await api.delete(`/turfs/${turfId}`);
       return res.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["admin-turfs"]);
+      queryClient.invalidateQueries(["turfs"]);
       toast.success(data?.message || "Turf deleted successfully");
     },
     onError: (error) => {
@@ -214,11 +214,11 @@ const ManageTurfs = () => {
                         {turf?.name || "Unnamed Turf"}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Capacity: {turf?.capacity || "N/A"}
+                        Default Price: {turf?.defaultPricePerSlot || "N/A"}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {turf?.location[1] || "No location"}
+                      {turf?.location.city}, {turf?.location.address || "No location"}
                     </td>
                     <td className="px-6 py-4">
                       <span

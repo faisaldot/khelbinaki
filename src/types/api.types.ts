@@ -40,7 +40,7 @@ export interface User {
 	name: string;
 	email: string;
 	phone?: string;
-	role: "user" | "admin" | "manager";
+	role?: "user" | "admin" | "manager";
 	isVerified: boolean;
 	isActive: boolean;
 	profilePicture?: string;

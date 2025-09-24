@@ -42,6 +42,10 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* 
+html {
+  scroll-behavior: smooth;
+} */
 
 
 :root {
