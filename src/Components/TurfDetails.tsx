@@ -11,71 +11,85 @@ import { PageLoader } from "./PlaceHolder";
 import { useAuth } from "../Hooks/useAuth";
 import { usePayment } from "../Hooks/api/usePayment";
 
+export interface CalendarProps {
+  selected: Date;
+  onSelect: (date: Date) => void;
+  className?: string;
+  disabled?: (a?: any) => boolean; // default true, but can toggle
+}
+
+
 // Simple Calendar Component
-const Calendar = ({ selected, onSelect, disabled = () => false, className = "" }) => {
+const Calendar = ({ selected, onSelect, disabled = () => false, className = "" }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
   
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const firstDayWeek = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
-    
-    const days = [];
-    
-    // Previous month's days
-    for (let i = firstDayWeek - 1; i >= 0; i--) {
-      const prevMonth = new Date(year, month - 1, 0);
-      days.push({
-        date: new Date(year, month - 1, prevMonth.getDate() - i),
-        isCurrentMonth: false
-      });
-    }
-    
-    // Current month's days
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push({
-        date: new Date(year, month, day),
-        isCurrentMonth: true
-      });
-    }
-    
-    // Next month's days to fill the grid
-    const remainingDays = 42 - days.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      days.push({
-        date: new Date(year, month + 1, day),
-        isCurrentMonth: false
-      });
-    }
-    
-    return days;
-  };
+const getDaysInMonth = (date: Date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  const firstDayWeek = firstDay.getDay(); // 0 (Sun) → 6 (Sat)
+  const daysInMonth = lastDay.getDate();
 
-  const formatDate = (date) => {
+  const days: { date: Date; isCurrentMonth: boolean }[] = [];
+
+  // Previous month's days
+  if (firstDayWeek > 0) {
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = firstDayWeek - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month - 1, prevMonthLastDay - i),
+        isCurrentMonth: false,
+      });
+    }
+  }
+
+  // Current month's days
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push({
+      date: new Date(year, month, day),
+      isCurrentMonth: true,
+    });
+  }
+
+  // Next month's days to fill grid (always 6 weeks → 42 cells)
+  const remainingDays = 42 - days.length;
+  for (let day = 1; day <= remainingDays; day++) {
+    days.push({
+      date: new Date(year, month + 1, day),
+      isCurrentMonth: false,
+    });
+  }
+
+  return days;
+};
+
+
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long' 
     });
   };
 
-  const isSameDay = (date1, date2) => {
+  const isSameDay = (date1: Date, date2: Date) => {
     return date1?.toDateString() === date2?.toDateString();
   };
 
-  const isToday = (date) => {
+  const isToday = (date: Date) => {
     return isSameDay(date, today);
   };
 
-  const isPast = (date) => {
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return dateOnly < todayOnly;
-  };
+ const isPast = (date: Date) => {
+  const now = new Date(); // always fresh "today"
+  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  return dateOnly < todayOnly; // strictly less, so today is NOT disabled
+};
   const days = getDaysInMonth(currentDate);
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -145,17 +159,17 @@ const TurfDetails = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [showTimeSlots, setShowTimeSlots] = useState(false);
 
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { initPaymentAsync, isLoading: isPaymentLoading } = usePayment();
   const queryClient = useQueryClient();
 
   // Helper functions - All defined at top to avoid hoisting issues
-  const getCurrentDayType = (date) => {
+  const getCurrentDayType = (date: Date) => {
     const day = new Date(date).getDay();
     return (day === 5 || day === 6) ? 'friday-saturday' : 'sunday-thursday';
   };
 
-  const formatTime = (time) => {
+  const formatTime = (time: string) => {
     if (!time) return '';
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
@@ -164,7 +178,7 @@ const TurfDetails = () => {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const getAmenityIcon = (amenity) => {
+  const getAmenityIcon = (amenity: string) => {
     const icons = {
       'Floodlights': '💡',
       'Parking': '🚗',

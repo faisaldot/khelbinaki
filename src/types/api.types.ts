@@ -57,6 +57,7 @@ export interface Turf {
 	name: string;
 	slug: string;
 	location: {
+    coordinates: any;
 		address: string;
 		city: string;
 	};

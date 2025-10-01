@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Copy, Check } from "lucide-react";
 import * as z from "zod";
 import api from "../../lib/api";
 
@@ -21,6 +21,9 @@ type AdminFormData = z.infer<typeof adminSchema>;
 
 const CreateAdminForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [createdAdminId, setCreatedAdminId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -32,12 +35,49 @@ const CreateAdminForm: React.FC = () => {
 
   const onSubmit = async (data: AdminFormData) => {
     try {
+      console.log('📤 Creating admin with data:', data);
       const res = await api.post("admin/users/admin", data);
+      
+      console.log('✅ Admin created response:', res.data);
+      
+      // Extract admin ID from response
+      const adminId = res.data.adminId || res.data.user?._id;
+      
+      if (!adminId) {
+        console.error('❌ No admin ID in response:', res.data);
+        toast.error("Admin created but ID not found in response");
+        return;
+      }
+
+      setCreatedAdminId(adminId);
       toast.success(res.data.message || "Admin created successfully!");
+      
+      // Show the admin ID prominently
+      toast.success(`Admin ID: ${adminId}`, {
+        duration: 10000,
+        action: {
+          label: "Copy",
+          onClick: () => {
+            navigator.clipboard.writeText(adminId);
+            toast.success("Admin ID copied!");
+          }
+        }
+      });
+
       reset();
     } catch (err: any) {
+      console.error('❌ Error creating admin:', err);
       const errorMessage = err.response?.data?.message || "Failed to create admin";
       toast.error(errorMessage);
+    }
+  };
+
+  const copyAdminId = () => {
+    if (createdAdminId) {
+      navigator.clipboard.writeText(createdAdminId);
+      setCopied(true);
+      toast.success("Admin ID copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -47,6 +87,38 @@ const CreateAdminForm: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Create New Admin
         </h2>
+
+        {/* Show created admin ID prominently */}
+        {createdAdminId && (
+          <div className="mb-6 p-4 bg-emerald-50 border-2 border-emerald-400 rounded-xl">
+            <p className="text-sm font-semibold text-emerald-800 mb-2">
+              ✅ Admin Created Successfully!
+            </p>
+            <p className="text-xs text-emerald-700 mb-2">
+              Copy this ID to assign the admin to a turf:
+            </p>
+            <div className="flex items-center gap-2 bg-white p-3 rounded-lg border border-emerald-300">
+              <code className="flex-1 text-sm font-mono text-gray-800 break-all">
+                {createdAdminId}
+              </code>
+              <button
+                type="button"
+                onClick={copyAdminId}
+                className="flex-shrink-0 p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+              >
+                {copied ? <Check size={18} /> : <Copy size={18} />}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCreatedAdminId(null)}
+              className="mt-3 text-xs text-emerald-600 hover:text-emerald-800 underline"
+            >
+              Create Another Admin
+            </button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Name */}
           <div>

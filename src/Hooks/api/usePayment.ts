@@ -24,7 +24,7 @@ export function usePayment() {
 		},
 		onSuccess: (data) => {
 			console.log("Payment initialization successful:", data);
-			const paymentUrl = data?.url;
+			const paymentUrl = data?.data?.url;
 			console.log("Payment URL:", paymentUrl);
 			if (paymentUrl) {
 				console.log("Redirecting to:", paymentUrl);

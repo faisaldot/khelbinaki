@@ -52,6 +52,11 @@ api.interceptors.response.use(
 	async (error: AxiosError) => {
 		const originalRequest = error.config as CustomAxiosRequestConfig;
 
+		// Add a condition to check if the failed request was to the login endpoint.
+		if (originalRequest.url === "/auth/login") {
+			return Promise.reject(error);
+		}
+
 		// Handle token refresh on 401 error
 		if (error.response?.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;

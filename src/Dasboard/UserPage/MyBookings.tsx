@@ -6,7 +6,7 @@ const MyBookings = () => {
     queryKey: ["my-bookings"],
     queryFn: async () => {
       const res = await api.get("/bookings/my-bookings")
-      return res.data;
+      return res.data?.data;
     },
   });
 
