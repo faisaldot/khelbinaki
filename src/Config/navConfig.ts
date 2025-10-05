@@ -22,14 +22,14 @@ export const navConfig = {
     { path: "/dashboard/admin/turfs", label: "Turf Management", icon: Trees },
     // { path: "/dashboard/reports", label: "Reports", icon: FileBarChart }
   ],
-manager: [
-  { path: "/dashboard/manager/statistics", label: "Statistics", icon: BarChart3 },  
-  { path: "/dashboard/profile", label: "Profile Management", icon: UserPen },
-   // Statistics
-  { path: "/dashboard/manager/turfs", label: "Manage Turfs", icon: Building2 },
-  { path: "/dashboard/manager/users", label: "Manage Users", icon: Users },          // Manage Users
-  { path: "/dashboard/manager/create-turf", label: "Create Turf", icon: PlusSquare }, // Create Turf
-  { path: "/dashboard/manager/create-admin", label: "Create Admin", icon: UserPlus }, // Create Admin
-]
+  manager: [
+    { path: "/dashboard/manager/statistics", label: "Statistics", icon: BarChart3 },
+    { path: "/dashboard/profile", label: "Profile Management", icon: UserPen },
+    // Statistics
+    { path: "/dashboard/manager/turfs", label: "Manage Turfs", icon: Building2 },
+    { path: "/dashboard/manager/users", label: "Manage Users", icon: Users },          // Manage Users
+    { path: "/dashboard/manager/create-turf", label: "Create Turf", icon: PlusSquare }, // Create Turf
+    { path: "/dashboard/manager/create-admin", label: "Create Admin", icon: UserPlus }, // Create Admin
+  ]
 
 };

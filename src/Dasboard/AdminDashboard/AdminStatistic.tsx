@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import api from "../../lib/api";
-import { XCircle, Clock, Calendar, Users, Mail, MapPin, FileText } from "lucide-react";
+import { XCircle, Calendar, Users, Mail, MapPin, FileText } from "lucide-react";
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area } from "recharts";
 
 const TurfAdminStatistics = () => {
@@ -66,7 +66,7 @@ const TurfAdminStatistics = () => {
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", minimumFractionDigits: 0 }).format(amount);
-  const formatNumber = (num: number) => new Intl.NumberFormat("en-US").format(num);
+  const formatNumber = (num: any) => new Intl.NumberFormat("en-US").format(num);
 
   const statisticsCards = [
     {
@@ -190,7 +190,15 @@ const TurfAdminStatistics = () => {
                     formatter={(value, name) => [name === "revenue" ? `৳${formatNumber(value)}` : `${value} bookings`, name === "revenue" ? "Revenue" : "Bookings"]}
                     labelFormatter={(label) => `Day ${label}`}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} fill="url(#bookingGradient)" dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }} activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2, fill: "white" }} />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    fill="url(#bookingGradient)"
+                    dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2, fill: "white" }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -208,7 +216,7 @@ const TurfAdminStatistics = () => {
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
                   {bookingData.length
-                    ? `+${(((Math.max(...bookingData.map((d) => d.revenue)) - Math.min(...bookingData.map((d) => d.revenue))) / Math.min(...bookingData.map((d) => d.revenue))) * 100).toFixed(0)}%`
+                    ? `+${(((Math.max(...bookingData.map((d: any) => d.revenue)) - Math.min(...bookingData.map((d: any) => d.revenue))) / Math.min(...bookingData.map((d: any) => d.revenue))) * 100).toFixed(0)}%`
                     : "0%"}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">Peak vs Low</p>
@@ -224,7 +232,7 @@ const TurfAdminStatistics = () => {
             <p className="text-gray-500">No recent bookings found.</p>
           ) : (
             <div className="space-y-4">
-              {recentBookings.map((booking) => (
+              {recentBookings.map((booking: any) => (
                 <div key={booking._id} className="bg-gray-50 rounded-xl border p-4">
                   <div className="flex justify-between items-start">
                     <div>

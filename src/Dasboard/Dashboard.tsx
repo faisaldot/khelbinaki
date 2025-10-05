@@ -1,9 +1,9 @@
 import { Link, NavLink, Outlet } from "react-router";
 import { useState } from "react";
-import { 
-  Menu, 
-  X,  
-  Settings, 
+import {
+  Menu,
+  X,
+  Settings,
   HelpCircle,
   ChevronRight,
   User
@@ -13,21 +13,16 @@ import { navConfig } from "../Config/navConfig";
 import { useAuth } from "../Hooks/useAuth";
 
 
-
-
-
-
-
 //  admin menus   
 
 //  Get all turf  ,  get all users 
 
 const DashboardLayout = () => {
-  const {user}=useAuth();
+  const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const links = navConfig[user?.role];
+  const links = user && user.role ? navConfig[user.role] ?? [] : [];
 
   // Sidebar menu items with icons
   const sidebarMenuItems = [...links];
@@ -54,8 +49,8 @@ const DashboardLayout = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden lg:block p-1 hover:bg-green-600/40 rounded transition-colors"
           >
-            <ChevronRight 
-              size={16} 
+            <ChevronRight
+              size={16}
               className={`rounded transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
             />
           </button>
@@ -72,7 +67,7 @@ const DashboardLayout = () => {
             <span className="text-sm font-medium opacity-90">{user?.name}</span>
           )}
         </div>
-      
+
       </div>
 
       {/* Menu Section */}
@@ -86,9 +81,9 @@ const DashboardLayout = () => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-    `flex items-center gap-3 p-2 rounded-lg transition-colors group 
+                `flex items-center gap-3 p-2 rounded-lg transition-colors group 
      ${isActive ? "bg-green-600/40" : "hover:bg-green-600/40"}`
-  }
+              }
             >
               {item.icon && <item.icon size={18} className="text-white/90 group-hover:text-white" />}
               {!isCollapsed && (
@@ -123,7 +118,7 @@ const DashboardLayout = () => {
     <div className="flex min-h-screen bg-gray-50">
       {/* Mobile Overlay */}
       {isMobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setIsMobileOpen(false)}
         />
@@ -143,10 +138,9 @@ const DashboardLayout = () => {
       </aside>
 
       {/* Mobile Sidebar */}
-      <aside 
-        className={`fixed top-0 left-0 z-40 w-64 h-screen transform transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+      <aside
+        className={`fixed top-0 left-0 z-40 w-64 h-screen transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <SidebarContent />
       </aside>

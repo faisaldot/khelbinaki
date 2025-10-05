@@ -208,7 +208,7 @@ const ManageTurfs = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {filteredTurfs?.map((turf) => (
+                {filteredTurfs?.map((turf: any) => (
                   <tr key={turf?._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <p className="font-medium text-gray-900">
@@ -224,8 +224,8 @@ const ManageTurfs = () => {
                     <td className="px-6 py-4">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-medium ${turf?.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
                           }`}
                       >
                         {turf?.isActive ? "Active" : "Inactive"}

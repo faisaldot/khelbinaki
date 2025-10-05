@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import api from "../../lib/api";
 import { ShieldCheck, Hourglass, XCircle, Users, Building, FileText, DollarSign, TrendingUp, Activity, Calendar, Mail, MapPin, Clock } from "lucide-react";
-import { useState, type MouseEvent } from "react"; 
+import { useState, type MouseEvent } from "react";
 
 interface Booking {
   _id: string;
@@ -14,8 +15,8 @@ interface Booking {
   turf: {
     name: string;
     location: {
-        address: string,
-        city: string,
+      address: string,
+      city: string,
     }
   } | null;
   date: string;
@@ -64,7 +65,7 @@ const ManagerStatistics = () => {
   );
 
   if (isLoading) return <StatisticsSkeleton />;
-  
+
   if (isError) {
     return (
       <div className="p-6 min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -78,16 +79,14 @@ const ManagerStatistics = () => {
   }
 
   const stats = response?.data || {};
-  const { 
-    totalUsers = 0, 
-    totalAdmins = 0,
-    totalTurfs = 0, 
-    totalRevenue = 0, 
-    totalBookings = 0, 
+  const {
+    totalUsers = 0,
+    totalTurfs = 0,
+    totalRevenue = 0,
+    totalBookings = 0,
     confirmedBookings = 0,
     pendingBookings = 0,
     cancelledBookings = 0,
-    averageBookingValue = 0 
   } = stats;
 
   const confirmationRate = totalBookings > 0 ? ((confirmedBookings / totalBookings) * 100).toFixed(1) : 0;
@@ -98,14 +97,14 @@ const ManagerStatistics = () => {
     { name: 'Pending', value: pendingBookings, fill: '#F59E0B', status: 'pending' },
     { name: 'Cancelled', value: cancelledBookings, fill: '#EF4444', status: 'cancelled' },
   ];
-  
+
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0 }).format(amount);
   const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
 
-  const handleBarClick = (data) => {
+  const handleBarClick = (data: any) => {
     if (data && data.status) {
-        setSelectedStatus(data.status);
-        setShowBookingsModal(true);
+      setSelectedStatus(data.status);
+      setShowBookingsModal(true);
     }
   };
 
@@ -128,39 +127,39 @@ const ManagerStatistics = () => {
 
   const BookingsModal = () => {
     const { data: bookingsResponse, isLoading: isLoadingBookings } = useQuery({
-        queryKey: ["all-manager-bookings"],
-        queryFn: async () => {
-            const res = await api.get("/admin/bookings?limit=100");
-            return res.data;
-        },
-        enabled: showBookingsModal,
+      queryKey: ["all-manager-bookings"],
+      queryFn: async () => {
+        const res = await api.get("/admin/bookings?limit=100");
+        return res.data;
+      },
+      enabled: showBookingsModal,
     });
 
     const allBookings: Booking[] = bookingsResponse?.data || [];
     const filteredBookings = selectedStatus
-        ? allBookings.filter(b => b.status === selectedStatus)
-        : allBookings;
+      ? allBookings.filter(b => b.status === selectedStatus)
+      : allBookings;
 
     const statusTitle = selectedStatus ? selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1) : 'All';
     const getStatusBadgeColor = (status: string) => {
-        switch (status?.toLowerCase()) {
-            case 'confirmed': return 'bg-green-100 text-green-700 border-green-200';
-            case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-            case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
-        }
+      switch (status?.toLowerCase()) {
+        case 'confirmed': return 'bg-green-100 text-green-700 border-green-200';
+        case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
+        case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
+        default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      }
     };
 
     return (
       // **THE FIX: Added onClick to the backdrop div**
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={() => setShowBookingsModal(false)}
       >
         {/* **THE FIX: Added onClick with stopPropagation to the modal content div** */}
-        <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col"
-            onClick={(e: MouseEvent) => e.stopPropagation()}
+        <div
+          className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+          onClick={(e: MouseEvent) => e.stopPropagation()}
         >
           <div className="p-6 border-b">
             <div className="flex items-center justify-between">
@@ -183,18 +182,18 @@ const ManagerStatistics = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-bold text-gray-800">{booking.turf?.name || 'Unknown Turf'}</h3>
-                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><MapPin size={12}/> {booking.turf?.location?.city || 'Unknown Location'}</p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><MapPin size={12} /> {booking.turf?.location?.city || 'Unknown Location'}</p>
                       </div>
                       <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeColor(booking.status)}`}>{booking.status}</span>
                     </div>
                     <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="flex items-center gap-2 text-gray-600"><Users size={14}/> {booking.user?.name || 'Deleted User'}</p>
-                        <p className="flex items-center gap-2 text-gray-600 mt-2"><Mail size={14}/> {booking.user?.email || 'N/A'}</p>
+                        <p className="flex items-center gap-2 text-gray-600"><Users size={14} /> {booking.user?.name || 'Deleted User'}</p>
+                        <p className="flex items-center gap-2 text-gray-600 mt-2"><Mail size={14} /> {booking.user?.email || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="flex items-center gap-2 text-gray-600"><Calendar size={14}/> {new Date(booking.date).toLocaleDateString()}</p>
-                        <p className="flex items-center gap-2 text-gray-600 mt-2"><Clock size={14}/> {booking.startTime} - {booking.endTime}</p>
+                        <p className="flex items-center gap-2 text-gray-600"><Calendar size={14} /> {new Date(booking.date).toLocaleDateString()}</p>
+                        <p className="flex items-center gap-2 text-gray-600 mt-2"><Clock size={14} /> {booking.startTime} - {booking.endTime}</p>
                       </div>
                     </div>
                   </div>
@@ -206,7 +205,7 @@ const ManagerStatistics = () => {
       </div>
     );
   };
-  
+
   return (
     <div className="p-6 min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/20">
       <div className="max-w-7xl mx-auto">
@@ -231,10 +230,72 @@ const ManagerStatistics = () => {
             <div className="flex items-center justify-between mb-6"><div><h3 className="text-xl font-semibold text-gray-800">Booking Status Distribution</h3><p className="text-sm text-gray-500 mt-1">Click on any bar to view bookings</p></div><TrendingUp className="w-6 h-6 text-gray-400" /></div>
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={bookingStatusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} onClick={(e) => e && e.activePayload && handleBarClick(e.activePayload[0].payload)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} /><XAxis dataKey="name" stroke="#64748b" fontSize={13} fontWeight={500} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} /><YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} allowDecimals={false}/><Tooltip content={({ active, payload }) => active && payload && payload.length ? <div className="bg-white border rounded-xl shadow-lg p-4"><p className="text-sm font-semibold text-gray-800 mb-1">{payload[0].payload.name}</p><p className="text-lg font-bold" style={{ color: payload[0].payload.fill }}>{formatNumber(payload[0].value as number)} bookings</p><p className="text-xs text-gray-500 mt-1">{totalBookings > 0 ? ((payload[0].value as number / totalBookings) * 100).toFixed(1) : 0}% of total</p><p className="text-xs text-blue-600 font-medium mt-2">Click to view details</p></div> : null} cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} />
-                  <Bar dataKey="value" name="Bookings" radius={[12, 12, 0, 0]} maxBarSize={80} className="cursor-pointer">
-                    {bookingStatusData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.fill} />))}
+                <BarChart
+                  data={bookingStatusData}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    stroke="#64748b"
+                    fontSize={13}
+                    fontWeight={500}
+                    tickLine={false}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white border rounded-xl shadow-lg p-4">
+                          <p className="text-sm font-semibold text-gray-800 mb-1">
+                            {payload[0].payload.name}
+                          </p>
+                          <p
+                            className="text-lg font-bold"
+                            style={{ color: payload[0].payload.fill }}
+                          >
+                            {formatNumber(payload[0].value as number)} bookings
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {totalBookings > 0
+                              ? ((payload[0].value as number / totalBookings) * 100).toFixed(1)
+                              : 0}
+                            % of total
+                          </p>
+                          <p className="text-xs text-blue-600 font-medium mt-2">
+                            Click to view details
+                          </p>
+                        </div>
+                      ) : null
+                    }
+                    cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }}
+                  />
+                  <Bar
+                    dataKey="value"
+                    name="Bookings"
+                    radius={[12, 12, 0, 0]}
+                    maxBarSize={80}
+                    className="cursor-pointer"
+                    onClick={(_data, index) => {
+                      // Defensive: check index and data
+                      if (
+                        typeof index === 'number' &&
+                        bookingStatusData[index]
+                      ) {
+                        handleBarClick(bookingStatusData[index]);
+                      }
+                    }}
+                  >
+                    {bookingStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
