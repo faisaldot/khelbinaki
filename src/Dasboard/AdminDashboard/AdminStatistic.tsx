@@ -53,14 +53,14 @@ const TurfAdminStatistics = () => {
   const stats = response?.data || {};
   const { totalBookings = 0, totalRevenue = 0, totalTurfs = 0, monthlyBookings = [], recentBookings = [] } = stats;
 
-  const bookingData = monthlyBookings.map((b) => ({
+  const bookingData = monthlyBookings.map((b: any) => ({
     day: b._id.day,
     revenue: b.revenue,
     bookings: b.bookings,
   }));
 
-  const monthlyTotalRevenue = bookingData.reduce((sum, day) => sum + day.revenue, 0);
-  const monthlyTotalBookings = bookingData.reduce((sum, day) => sum + day.bookings, 0);
+  const monthlyTotalRevenue = bookingData.reduce((sum: number, day: any) => sum + day.revenue, 0);
+  const monthlyTotalBookings = bookingData.reduce((sum: number, day: any) => sum + day.bookings, 0);
   const averageDailyRevenue = bookingData.length ? monthlyTotalRevenue / bookingData.length : 0;
   const averageDailyBookings = bookingData.length ? monthlyTotalBookings / bookingData.length : 0;
 
@@ -179,7 +179,7 @@ const TurfAdminStatistics = () => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="day" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${(value / 1000).toFixed(0)}k`} />
+                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `৳${(value / 1000).toFixed(0)}k`} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "white",

@@ -30,8 +30,8 @@ export function useAuth() {
 				}>
 			>("/auth/login", credentials);
 
-			const loginData = response.data.data as  any;
-			const loginMessage = response.data.message as  any;
+			const loginData = response.data.data as any;
+			const loginMessage = response.data.message as any;
 			return {
 				message: loginMessage,
 				data: {
@@ -109,7 +109,7 @@ export function useAuth() {
 			const verificationMessage = response.data.message as any;
 			console.log(verificationData);
 			return {
-				message:verificationMessage,
+				message: verificationMessage,
 				data: {
 					user: verificationData?.user,
 					accessToken: verificationData?.accessToken,
@@ -180,11 +180,11 @@ export function useAuth() {
 			console.log(resetData);
 			return {
 				message: resetData.message,
-					user: resetData?.user,
-					accessToken: resetData?.accessToken,
+				user: resetData?.user,
+				accessToken: resetData?.accessToken,
 			};
 		},
-		onSuccess: ({ user,accessToken, message }) => {
+		onSuccess: ({ user, accessToken, message }) => {
 			console.log("Password reset successful", user);
 			if (user) {
 				login(user, accessToken, "cookie-stored");

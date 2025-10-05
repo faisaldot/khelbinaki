@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,47 +22,47 @@ const ManageTurfs = () => {
 
   // Mutation: Update turf (active/inactive)
   const updateTurfMutation = useMutation({
-    mutationFn: async ({ turfId, isActive }) => {
+    mutationFn: async ({ turfId, isActive }: { turfId: string; isActive: boolean }) => {
       const res = await api.patch(`/turfs/${turfId}`, { isActive });
       return res.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["admin-turfs"]);
+      queryClient.invalidateQueries({ queryKey: ["admin-turfs"] });
       toast.success(data?.message || "Turf updated successfully");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to update turf");
     },
   });
 
   // Mutation: Delete turf
   const deleteTurfMutation = useMutation({
-    mutationFn: async (turfId) => {
+    mutationFn: async (turfId: string) => {
       const res = await api.delete(`/turfs/${turfId}`);
       return res.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["turfs"]);
+      queryClient.invalidateQueries({ queryKey: ["turfs"] });
       toast.success(data?.message || "Turf deleted successfully");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to delete turf");
     },
   });
 
   // Handlers
-  const handleTurfAction = (turfId, isActive) => {
+  const handleTurfAction = (turfId: string, isActive: boolean) => {
     updateTurfMutation.mutate({ turfId, isActive });
   };
 
-  const handleDeleteTurf = (turfId) => {
+  const handleDeleteTurf = (turfId: string) => {
     if (window.confirm("Are you sure you want to delete this turf?")) {
       deleteTurfMutation.mutate(turfId);
     }
   };
 
   // Filter turfs
-  const filteredTurfs = turfs.filter((turf) => {
+  const filteredTurfs = turfs.filter((turf: any) => {
     const matchesSearch =
       turf?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       turf?.location[1]?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -222,11 +223,10 @@ const ManageTurfs = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          turf?.isActive
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${turf?.isActive
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
-                        }`}
+                          }`}
                       >
                         {turf?.isActive ? "Active" : "Inactive"}
                       </span>

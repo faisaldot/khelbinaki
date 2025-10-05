@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import api from "../../lib/api";
 import { ShieldCheck, Hourglass, XCircle, Users, Building, FileText, DollarSign, TrendingUp, Activity, Calendar, Mail, MapPin, Clock } from "lucide-react";
-import { useState, type MouseEvent } from "react"; // Import MouseEvent
+import { useState, type MouseEvent } from "react"; 
 
 interface Booking {
   _id: string;
@@ -102,7 +102,7 @@ const ManagerStatistics = () => {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0 }).format(amount);
   const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
 
-  const handleBarClick = (data: wu) => {
+  const handleBarClick = (data) => {
     if (data && data.status) {
         setSelectedStatus(data.status);
         setShowBookingsModal(true);

@@ -254,13 +254,13 @@ const AdminBookingManagement = () => {
                     <td className="px-6 py-5">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${booking.status === "confirmed" ? "bg-green-100 text-green-800"
-                            : booking.status === "pending" ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
+                          : booking.status === "pending" ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
                           }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${booking.status === "confirmed" ? "bg-green-500"
-                            : booking.status === "pending" ? "bg-yellow-500 animate-pulse"
-                              : "bg-red-500"
+                          : booking.status === "pending" ? "bg-yellow-500 animate-pulse"
+                            : "bg-red-500"
                           }`}></span>
                         {booking.status}
                       </span>

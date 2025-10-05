@@ -1,34 +1,34 @@
 import { createBrowserRouter } from "react-router";
- import MainLayout from "../Layouts/MainLayout";
-  import Home from "../Pages/Home";
-   import TurfDetails from "../Components/TurfDetails"; 
-   import AboutUs from "../Pages/AboutUs"; 
-   import Register from "../AuthPage/Register";
-    import Login from "../AuthPage/Login"; 
-    import VerifyEmail from "../AuthPage/VerifyEmail";
-     import NotFound from "../Pages/ErrorPage";
-      import Gallery from "../Pages/Gallery";
-       import Turfs from "../Pages/Turfs";
-        import Profile from "../Dasboard/UserPage/Profile";
-         import MyBookings from "../Dasboard/UserPage/MyBookings";
-          import DashboardLayout from "../Dasboard/Dashboard"; 
-          import AdminStatistic from "../Dasboard/AdminDashboard/AdminStatistic"; 
-          import AdminBookingManagement from "../Dasboard/AdminDashboard/AdminBookingManagement";
-           import AdminTurfManagement from "../Dasboard/AdminDashboard/AdminTurfManagement";
-            import { BookingSuccessPage } from "../Pages/PaymentSuccess"
-            ; import { BookingFailedPage } from "../Pages/PaymentFaild";
-             import ForgotPassword from "../AuthPage/ForgetPassword"; 
-             import { ResetPassword } from "../AuthPage/ResetPassword"; 
-             import ProtectedRoute from "./ProtectedRoute"; 
-             import { BookingCancelledPage } from "../Pages/PaymentCancel";
-              import ManagerStatistics from "../Dasboard/ManagerDashboard/ManagerStatistics";
-               import ManageTurfs from "../Dasboard/ManagerDashboard/ManageTurfs";
-                import ManageUsers from "../Dasboard/ManagerDashboard/ManageUsers"; 
-                import CreateAdmin from "../Dasboard/ManagerDashboard/CreateAdmin"; 
-                import CreateTurfs from "../Dasboard/ManagerDashboard/CreateTurfs";
+import MainLayout from "../Layouts/MainLayout";
+import Home from "../Pages/Home";
+import TurfDetails from "../Components/TurfDetails";
+import AboutUs from "../Pages/AboutUs";
+import Register from "../AuthPage/Register";
+import Login from "../AuthPage/Login";
+import VerifyEmail from "../AuthPage/VerifyEmail";
+import NotFound from "../Pages/ErrorPage";
+import Gallery from "../Pages/Gallery";
+import Turfs from "../Pages/Turfs";
+import Profile from "../Dasboard/UserPage/Profile";
+import MyBookings from "../Dasboard/UserPage/MyBookings";
+import DashboardLayout from "../Dasboard/Dashboard";
+import AdminStatistic from "../Dasboard/AdminDashboard/AdminStatistic";
+import AdminBookingManagement from "../Dasboard/AdminDashboard/AdminBookingManagement";
+import AdminTurfManagement from "../Dasboard/AdminDashboard/AdminTurfManagement";
+import { BookingSuccessPage } from "../Pages/PaymentSuccess"
+  ; import { BookingFailedPage } from "../Pages/PaymentFaild";
+import ForgotPassword from "../AuthPage/ForgetPassword";
+import { ResetPassword } from "../AuthPage/ResetPassword";
+import ProtectedRoute from "./ProtectedRoute";
+import { BookingCancelledPage } from "../Pages/PaymentCancel";
+import ManagerStatistics from "../Dasboard/ManagerDashboard/ManagerStatistics";
+import ManageTurfs from "../Dasboard/ManagerDashboard/ManageTurfs";
+import ManageUsers from "../Dasboard/ManagerDashboard/ManageUsers";
+import CreateAdmin from "../Dasboard/ManagerDashboard/CreateAdmin";
+import CreateTurfs from "../Dasboard/ManagerDashboard/CreateTurfs";
 
-                
-                 import ContactPage from "../Pages/ContactPage";
+
+import ContactPage from "../Pages/ContactPage";
 const router = createBrowserRouter([
   {
     path: "/",

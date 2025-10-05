@@ -23,55 +23,55 @@ export interface CalendarProps {
 const Calendar = ({ selected, onSelect, disabled = () => false, className = "" }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
-  
-const getDaysInMonth = (date: Date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  
-  const firstDayWeek = firstDay.getDay(); // 0 (Sun) → 6 (Sat)
-  const daysInMonth = lastDay.getDate();
 
-  const days: { date: Date; isCurrentMonth: boolean }[] = [];
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
 
-  // Previous month's days
-  if (firstDayWeek > 0) {
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
-    for (let i = firstDayWeek - 1; i >= 0; i--) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const firstDayWeek = firstDay.getDay(); // 0 (Sun) → 6 (Sat)
+    const daysInMonth = lastDay.getDate();
+
+    const days: { date: Date; isCurrentMonth: boolean }[] = [];
+
+    // Previous month's days
+    if (firstDayWeek > 0) {
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+      for (let i = firstDayWeek - 1; i >= 0; i--) {
+        days.push({
+          date: new Date(year, month - 1, prevMonthLastDay - i),
+          isCurrentMonth: false,
+        });
+      }
+    }
+
+    // Current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
       days.push({
-        date: new Date(year, month - 1, prevMonthLastDay - i),
+        date: new Date(year, month, day),
+        isCurrentMonth: true,
+      });
+    }
+
+    // Next month's days to fill grid (always 6 weeks → 42 cells)
+    const remainingDays = 42 - days.length;
+    for (let day = 1; day <= remainingDays; day++) {
+      days.push({
+        date: new Date(year, month + 1, day),
         isCurrentMonth: false,
       });
     }
-  }
 
-  // Current month's days
-  for (let day = 1; day <= daysInMonth; day++) {
-    days.push({
-      date: new Date(year, month, day),
-      isCurrentMonth: true,
-    });
-  }
-
-  // Next month's days to fill grid (always 6 weeks → 42 cells)
-  const remainingDays = 42 - days.length;
-  for (let day = 1; day <= remainingDays; day++) {
-    days.push({
-      date: new Date(year, month + 1, day),
-      isCurrentMonth: false,
-    });
-  }
-
-  return days;
-};
+    return days;
+  };
 
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long'
     });
   };
 
@@ -83,13 +83,13 @@ const getDaysInMonth = (date: Date) => {
     return isSameDay(date, today);
   };
 
- const isPast = (date: Date) => {
-  const now = new Date(); // always fresh "today"
-  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isPast = (date: Date) => {
+    const now = new Date(); // always fresh "today"
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  return dateOnly < todayOnly; // strictly less, so today is NOT disabled
-};
+    return dateOnly < todayOnly; // strictly less, so today is NOT disabled
+  };
   const days = getDaysInMonth(currentDate);
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -129,7 +129,7 @@ const getDaysInMonth = (date: Date) => {
           const isDisabled = disabled(day.date) || isPast(day.date);
           const isSelected = isSameDay(selected, day.date);
           const isTodayDate = isToday(day.date);
-          
+
           return (
             <button
               key={index}
@@ -156,7 +156,7 @@ const getDaysInMonth = (date: Date) => {
 const TurfDetails = () => {
   const { slug } = useParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<null | LocalSlot>(null);
   const [showTimeSlots, setShowTimeSlots] = useState(false);
 
   const { isAuthenticated } = useAuth();
@@ -179,37 +179,37 @@ const TurfDetails = () => {
   };
 
   const getAmenityIcon = (amenity: string) => {
-    const icons = {
-      'Floodlights': '💡',
-      'Parking': '🚗',
+    const icons: Record<string, string> = {
+      Floodlights: '💡',
+      Parking: '🚗',
       'Changing Room': '🚿',
-      'Gallery': '👥',
-      'Wifi': '📶',
-      'WiFi': '📶',
-      'Security': '🛡️'
+      Gallery: '👥',
+      Wifi: '📶',
+      WiFi: '📶',
+      Security: '🛡️',
     };
-    return icons[amenity] || '✅';
+    return icons[amenity] ?? '✅';
   };
 
   // BUG FIX 1: Check if time slot has already passed for today's date
-  const isTimeSlotPassed = (startTime, selectedDate) => {
+  const isTimeSlotPassed = (startTime: string, selectedDate: Date) => {
     const today = new Date();
     const selectedDateStr = selectedDate.toDateString();
     const todayStr = today.toDateString();
-    
+
     // If selected date is not today, no need to check time
     if (selectedDateStr !== todayStr) {
       return false;
     }
-    
+
     // If it's today, check if the time slot has passed
     const currentHour = today.getHours();
     const currentMinutes = today.getMinutes();
     const currentTotalMinutes = currentHour * 60 + currentMinutes;
-    
+
     const [slotHour, slotMinutes] = startTime.split(':').map(Number);
     const slotTotalMinutes = slotHour * 60 + slotMinutes;
-    
+
     return slotTotalMinutes <= currentTotalMinutes;
   };
 
@@ -224,21 +224,21 @@ const TurfDetails = () => {
   });
 
   // Query to fetch turf availability with proper refetch
-  const { data: availability, isLoading: isAvailabilityLoading, refetch: refetchAvailability } = useQuery({
+  const { data: availability, isLoading: isAvailabilityLoading, refetch: refetchAvailability } = useQuery<TurfAvailability | null>({
     queryKey: ["turf-availability", data?.data?._id, selectedDate?.toDateString()],
-    queryFn: async () => {
+    queryFn: async (): Promise<TurfAvailability | null> => {
       if (!selectedDate || !data?.data?._id) return null;
       const dateStr = selectedDate.toISOString().split("T")[0];
       const response = await api.get<ApiResponse<TurfAvailability>>(
         `/turfs/${data.data._id}/availability`,
         { params: { date: dateStr } }
       );
-      return response.data.data;
+      return response.data.data ?? null;
     },
     enabled: !!selectedDate && !!data?.data?._id,
     refetchOnWindowFocus: true,
-    staleTime: 0, // Always consider data stale for real-time updates
-    cacheTime: 0, // Don't cache availability data
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Effect to refetch availability when selectedDate changes
@@ -271,46 +271,55 @@ const TurfDetails = () => {
   });
 
   // Get price for specific time based on pricing rules
-  const getPriceForTime = (time, dateForPrice = selectedDate) => {
+  const getPriceForTime = (time: string, dateForPrice: Date = selectedDate) => {
     if (!data?.data?.pricingRules) return data?.data?.defaultPricePerSlot || 2000;
-    
+
     const dayType = getCurrentDayType(dateForPrice);
     const rule = data.data.pricingRules.find(r => r.dayType === dayType);
-    
+
     if (!rule) return data?.data?.defaultPricePerSlot || 2000;
-    
+
     const timeHour = parseInt(time.split(':')[0]);
-    
+
     // Find which pricing slot this time falls into
     for (const slot of rule.timeSlots) {
       const startHour = parseInt(slot.startTime.split(':')[0]);
       const endHour = parseInt(slot.endTime.split(':')[0]);
-      
+
       if (timeHour >= startHour && timeHour < endHour) {
         return slot.pricePerSlot;
       }
     }
-    
+
     return data?.data?.defaultPricePerSlot || 2000;
   };
 
   // Generate hourly time slots based on operating hours
-  const generateTimeSlots = () => {
+  type LocalSlot = {
+    startTime: string;
+    endTime: string;
+    pricePerSlot: number;
+    isAvailable: boolean;
+    isTimePassed: boolean;
+    isBooked?: boolean;
+  };
+
+  const generateTimeSlots = (): LocalSlot[] => {
     if (!data?.data) return [];
-    
+
     const { start, end } = data.data.operatingHours;
     const slots = [];
-    
+
     const startHour = parseInt(start.split(':')[0]);
     const endHour = parseInt(end.split(':')[0]);
-    
+
     for (let hour = startHour; hour < endHour; hour++) {
       const startTime = `${String(hour).padStart(2, '0')}:00`;
       const endTime = `${String(hour + 1).padStart(2, '0')}:00`;
-      
+
       // BUG FIX 1: Check if time slot has passed for today
       const hasPassedTime = isTimeSlotPassed(startTime, selectedDate);
-      
+
       slots.push({
         startTime,
         endTime,
@@ -319,31 +328,31 @@ const TurfDetails = () => {
         isTimePassed: hasPassedTime
       });
     }
-    
+
     return slots;
   };
 
   // BUG FIX 2: Enhanced availability check with proper backend data handling
-  const getAvailableTimeSlots = () => {
-    const allSlots = generateTimeSlots();
-    
+  const getAvailableTimeSlots = (): LocalSlot[] => {
+    const allSlots: LocalSlot[] = generateTimeSlots();
+
     if (!availability?.slots) {
       // If no backend data, just return slots with time-based availability
       return allSlots;
     }
-    
+
     // Update availability based on backend data AND time check
-    return allSlots.map(slot => {
+    return allSlots.map((slot) => {
       const backendSlot = availability.slots.find(
         (availSlot: AvailabilitySlot) => availSlot.startTime === slot.startTime
       );
-      
+
       // A slot is available only if:
       // 1. It hasn't passed the current time (for today)
       // 2. Backend says it's available (not booked)
       const isBackendAvailable = backendSlot?.isAvailable ?? true;
       const finalAvailability = !slot.isTimePassed && isBackendAvailable;
-      
+
       return {
         ...slot,
         isAvailable: finalAvailability,
@@ -414,9 +423,7 @@ const TurfDetails = () => {
   };
 
   const isFormLoading = bookingMutation.isPending || isPaymentLoading || isAvailabilityLoading;
-  const availableSlots = getAvailableTimeSlots();
-  // Filter only available slots for showing in dropdown
-  const availableSlotsOnly = availableSlots.filter(slot => slot.isAvailable);
+  const availableSlots: LocalSlot[] = getAvailableTimeSlots();
 
   if (isLoading) return <PageLoader />;
 
@@ -441,7 +448,7 @@ const TurfDetails = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        
+
         {/* Hero Section */}
         <div className="relative mb-12">
           <div className="relative h-96 rounded-3xl overflow-hidden shadow-2xl">
@@ -451,7 +458,7 @@ const TurfDetails = () => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            
+
             {/* Hero Content */}
             <div className="absolute bottom-8 left-8 right-8">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -466,7 +473,7 @@ const TurfDetails = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                   <div className="text-center">
                     <p className="text-white/80 text-sm mb-1">Starting from</p>
@@ -538,7 +545,7 @@ const TurfDetails = () => {
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 text-gray-400" />
                           <span className="text-gray-700">
-                            {selectedTimeSlot 
+                            {selectedTimeSlot
                               ? `${formatTime(selectedTimeSlot.startTime)} - ${formatTime(selectedTimeSlot.endTime)}`
                               : "Choose time slot"
                             }
@@ -557,10 +564,10 @@ const TurfDetails = () => {
                               </div>
                             </div>
                           ) : availableSlots.length > 0 ? (
-                            availableSlots.map((slot, idx) => {
+                            availableSlots.map((slot) => {
                               let statusText = '';
                               let statusClass = '';
-                              
+
                               if (slot.isTimePassed) {
                                 statusText = '(Time Passed)';
                                 statusClass = 'text-red-500';
@@ -571,7 +578,7 @@ const TurfDetails = () => {
                                 statusText = '(Unavailable)';
                                 statusClass = 'text-gray-500';
                               }
-                              
+
                               return (
                                 <button
                                   key={`${slot.startTime}-${slot.isAvailable}-${slot.isTimePassed}`}
@@ -581,11 +588,10 @@ const TurfDetails = () => {
                                       setShowTimeSlots(false);
                                     }
                                   }}
-                                  className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 transition-colors ${
-                                    slot.isAvailable 
-                                      ? 'hover:bg-green-50 cursor-pointer' 
+                                  className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 transition-colors ${slot.isAvailable
+                                      ? 'hover:bg-green-50 cursor-pointer'
                                       : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                  }`}
+                                    }`}
                                   disabled={!slot.isAvailable || isFormLoading}
                                 >
                                   <div className="flex justify-between items-center">
@@ -632,7 +638,7 @@ const TurfDetails = () => {
 
                   {/* Book Now Button */}
                   <button
-                    onClick={handleBooking}   
+                    onClick={handleBooking}
                     disabled={!selectedTimeSlot || isFormLoading}
                     className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:via-green-800 hover:to-green-900 transform hover:scale-105 hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none"
                   >
@@ -665,10 +671,10 @@ const TurfDetails = () => {
               )}
             </div>
           </div>
-          
+
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* About Section */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
@@ -678,7 +684,7 @@ const TurfDetails = () => {
                 About This Turf
               </h2>
               <p className="text-gray-600 leading-relaxed">{turf.description}</p>
-              
+
               {/* Key Info Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 <div className="bg-green-50 rounded-xl p-4 border border-green-100">
@@ -690,7 +696,7 @@ const TurfDetails = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                   <div className="flex items-center gap-3">
                     <Users className="w-5 h-5 text-blue-600" />
@@ -794,7 +800,7 @@ const TurfDetails = () => {
                   <p className="font-medium text-gray-800 mb-1">Address</p>
                   <p className="text-gray-600">{turf.location.address}, {turf.location.city}</p>
                 </div>
-                
+
                 {/* Embedded Google Map */}
                 <div className="w-full h-64 rounded-xl overflow-hidden shadow-sm">
                   <iframe

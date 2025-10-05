@@ -57,7 +57,7 @@ export interface Turf {
 	name: string;
 	slug: string;
 	location: {
-    coordinates: any;
+		coordinates: any;
 		address: string;
 		city: string;
 	};
@@ -96,11 +96,11 @@ export interface Booking {
 
 // Availability types
 export interface AvailabilitySlot {
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean; 
-  pricePerSlot: number;
-  dayTypeLabel: "FRI-SAT" | "SUN-THU";
+	startTime: string;
+	endTime: string;
+	isAvailable: boolean;
+	pricePerSlot: number;
+	dayTypeLabel: "FRI-SAT" | "SUN-THU";
 }
 
 export interface TurfAvailability {

@@ -77,22 +77,20 @@ const MyBookings = () => {
 
   const getStatusBadge = (status: string) => (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        status === "confirmed"
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === "confirmed"
           ? "bg-emerald-100 text-emerald-800"
           : status === "pending"
-          ? "bg-yellow-100 text-yellow-800"
-          : "bg-red-100 text-red-800"
-      }`}
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-red-100 text-red-800"
+        }`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-          status === "confirmed"
+        className={`w-1.5 h-1.5 rounded-full mr-1.5 ${status === "confirmed"
             ? "bg-emerald-400"
             : status === "pending"
-            ? "bg-yellow-400"
-            : "bg-red-400"
-        }`}
+              ? "bg-yellow-400"
+              : "bg-red-400"
+          }`}
       ></span>
       {status}
     </span>

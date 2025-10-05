@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, MessageSquare, User, Phone, AlertTriangle, Send, Shield } from 'lucide-react';
+import { useState } from 'react';
+import { Send } from 'lucide-react';
 
 export default function ContactPage() {
   const [isReportMode, setIsReportMode] = useState(false);
@@ -12,14 +12,14 @@ export default function ContactPage() {
     reportType: 'bug'
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', formData);
@@ -90,7 +90,7 @@ export default function ContactPage() {
         <div className="">      
           {/* Contact Form */}
           <div className="">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <form className="bg-white rounded-2xl shadow-lg p-8" onSubmit={handleSubmit}>
               <div className="space-y-6">
                 
                 {/* Full Name */}
@@ -228,7 +228,7 @@ export default function ContactPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import Logo from "../../public/KhelbaNakiLogo.png";
 import Container from "./Container";
 import { useAuth } from "../Hooks/useAuth";
 import { useState, useEffect } from "react";
-import { Menu, X, User, LogOut, Settings, ChevronDown, Contact, Contact2Icon } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {

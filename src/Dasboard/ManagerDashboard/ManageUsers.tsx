@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../../api/axiosInstance";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
@@ -18,40 +18,41 @@ const ManageUsers = () => {
       console.log(res?.data);
       return res.data;
     }
-});
+  });
 
   // Mutation for updating user status
-const updateUserMutation = useMutation({
-  mutationFn: async ({ userId, isActive }) => {
-    const res = await api.patch(`/admin/users/${userId}`, { isActive });
-    return res.data;
-  },
-  onSuccess: (data) => {
-    queryClient.invalidateQueries(["admin-users"]);
-    toast.success(data.message || "User updated successfully");
-  },
-  onError: (error) => {
-    toast.error(error?.response?.data?.message || "Failed to update user");
-  }
-});
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
+      const res = await api.patch(`/admin/users/${userId}`, { isActive });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      toast.success(data.message || "User updated successfully");
+    },
+
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update user");
+    }
+  });
 
 
 
   const users = usersResponse?.data || [];
 
   // Filter users based on search and status
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter((user: { name: string; email: string; isActive: any; }) => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || 
-                         (filterStatus === "active" && user.isActive) ||
-                         (filterStatus === "inactive" && !user.isActive);
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "all" ||
+      (filterStatus === "active" && user.isActive) ||
+      (filterStatus === "inactive" && !user.isActive);
     return matchesSearch && matchesStatus;
   });
 
-const handleUserAction = (userId, isActive) => {
-  updateUserMutation.mutate({ userId, isActive });
-};
+  const handleUserAction = (userId: string, isActive: boolean) => {
+    updateUserMutation.mutate({ userId, isActive });
+  };
 
 
   // Loading skeleton component
@@ -60,14 +61,14 @@ const handleUserAction = (userId, isActive) => {
       <div className="max-w-7xl mx-auto">
         <div className="h-8 w-64 bg-gray-200 rounded-lg animate-pulse mb-2"></div>
         <div className="h-4 w-96 bg-gray-200 rounded animate-pulse mb-8"></div>
-        
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex gap-4 mb-6">
             <div className="h-10 w-64 bg-gray-200 rounded-xl animate-pulse"></div>
             <div className="h-10 w-32 bg-gray-200 rounded-xl animate-pulse"></div>
           </div>
-          
-          {[1,2,3,4,5].map(i => (
+
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="flex items-center gap-4 p-4 border-b border-gray-100">
               <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-12 w-12 bg-gray-200 rounded-full animate-pulse"></div>
@@ -132,7 +133,7 @@ const handleUserAction = (userId, isActive) => {
                     className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 outline-none text-sm"
                   />
                 </div>
-                
+
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -151,10 +152,10 @@ const handleUserAction = (userId, isActive) => {
                 Total: <span className="font-semibold text-gray-800">{users.length}</span>
               </span>
               <span className="text-gray-600">
-                Active: <span className="font-semibold text-green-600">{users.filter(u => u.isActive).length}</span>
+                Active: <span className="font-semibold text-green-600">{users.filter((u: { isActive: any; }) => u.isActive).length}</span>
               </span>
               <span className="text-gray-600">
-                Inactive: <span className="font-semibold text-red-600">{users.filter(u => !u.isActive).length}</span>
+                Inactive: <span className="font-semibold text-red-600">{users.filter((u: { isActive: any; }) => !u.isActive).length}</span>
               </span>
               <span className="text-gray-600">
                 Showing: <span className="font-semibold text-blue-600">{filteredUsers.length}</span>
@@ -185,7 +186,7 @@ const handleUserAction = (userId, isActive) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredUsers.map((user) => (
+                  {filteredUsers.map((user: { _id: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; id: any; photo: string | undefined; name: string | undefined; role: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; email: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; phone: any; address: any; isActive: any; createdAt: string | number | Date; }) => (
                     <tr key={user._id || user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -213,14 +214,12 @@ const handleUserAction = (userId, isActive) => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          user.isActive 
-                            ? 'bg-green-100 text-green-800' 
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${user.isActive
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${
-                            user.isActive ? 'bg-green-500' : 'bg-red-500'
-                          }`}></div>
+                          }`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'
+                            }`}></div>
                           {user.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
@@ -238,7 +237,7 @@ const handleUserAction = (userId, isActive) => {
                         <div className="flex items-center gap-2">
                           {user.isActive ? (
                             <button
-                              onClick={() => handleUserAction(user._id || user.id,false)}
+                              onClick={() => handleUserAction(user._id || user.id, false)}
                               disabled={updateUserMutation.isPending}
                               className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
                             >
@@ -246,7 +245,7 @@ const handleUserAction = (userId, isActive) => {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleUserAction(user._id || user.id, true )}
+                              onClick={() => handleUserAction(user._id || user.id, true)}
                               disabled={updateUserMutation.isPending}
                               className="px-3 py-1.5 bg-green-100 text-green-700 text-sm rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
                             >
@@ -288,7 +287,7 @@ const handleUserAction = (userId, isActive) => {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Active Users</h3>
-                <p className="text-2xl font-bold text-green-600">{users.filter(u => u.isActive).length}</p>
+                <p className="text-2xl font-bold text-green-600">{users.filter((u: { isActive: any; }) => u.isActive).length}</p>
               </div>
             </div>
           </div>
@@ -302,7 +301,7 @@ const handleUserAction = (userId, isActive) => {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Inactive Users</h3>
-                <p className="text-2xl font-bold text-red-600">{users.filter(u => !u.isActive).length}</p>
+                <p className="text-2xl font-bold text-red-600">{users.filter((u: { isActive: any; }) => !u.isActive).length}</p>
               </div>
             </div>
           </div>

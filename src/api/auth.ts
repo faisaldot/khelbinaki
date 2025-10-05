@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosInstance";
+import type { VerifyOtpData } from "../types/api.types";
 
 // Register
 export const userCreate =(data:object)=>{
@@ -10,7 +11,7 @@ export const userCreate =(data:object)=>{
 
 
 // Verify OTP
-export const verifyOtp = async ({ email, otp }) => {
+export const verifyOtp = async ({ email, otp }: Pick<VerifyOtpData, "email" | "otp">) => {
   console.log(email,otp);
   const res = await axiosInstance.post("/auth/verify-otp", { email, otp });
   console.log(res);
